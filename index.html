@@ -200,12 +200,15 @@ function updatePieChart() {
 
     pieChartInstance.data.labels = labels;
     pieChartInstance.data.datasets[0].data = data;
-const total = portfolio.reduce((sum, item) => sum + item.shares, 0);
+const total = portfolio.reduce(
+    (sum, item) => sum + (item.shares * item.price),
+    0
+);
 document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
 
     pieChartInstance.update();
 }
-function addToPortfolio() {
+async function addToPortfolio() {
     const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
     const shares = parseFloat(document.getElementById("portfolioShares").value);
 
@@ -214,7 +217,26 @@ function addToPortfolio() {
         return;
     }
 
-    portfolio.push({ symbol, shares });
+    try {
+    const response = await fetch(`/api/stock?symbol=${symbol}`);
+    const data = await response.json();
+
+    if (data.error) {
+        alert("Stock not found.");
+        return;
+    }
+
+    portfolio.push({
+        symbol,
+        shares,
+        price: data.current
+    });
+
+    updatePieChart();
+
+} catch (err) {
+    alert("Error fetching stock price.");
+}
 
     updatePieChart();
 
