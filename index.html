@@ -172,8 +172,7 @@ new Chart(document.getElementById('miniChart'), {
   },
   options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
 });
-
-new Chart(document.getElementById('pieChart'), {
+pieChartInstance = new Chart(document.getElementById('pieChart'), {
   type: 'doughnut',
   data: {
     labels: ['AAPL','TSLA','AMZN'],
