@@ -225,6 +225,16 @@ async function addToPortfolio() {
         alert("Stock not found.");
         return;
     }
+portfolio.push({
+    symbol,
+    shares,
+    price: data.current
+});
+
+updatePieChart();
+} catch (err) {
+    alert("Error fetching stock price.");
+}
 
     portfolio.push({
         symbol,
