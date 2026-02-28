@@ -194,6 +194,22 @@ new Chart(document.getElementById('riskChart'), {
     }]
   }
 });
+function addToPortfolio() {
+    const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
+    const shares = parseFloat(document.getElementById("portfolioShares").value);
+
+    if (!symbol || !shares) {
+        alert("Enter symbol and shares.");
+        return;
+    }
+
+    portfolio.push({ symbol, shares });
+
+    updatePieChart();
+
+    document.getElementById("portfolioSymbol").value = "";
+    document.getElementById("portfolioShares").value = "";
+}
 async function loadLiveData() {
   const symbol = document.getElementById("stockInput").value.toUpperCase();
   if (!symbol) {
