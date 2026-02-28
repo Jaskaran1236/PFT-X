@@ -236,19 +236,6 @@ updatePieChart();
     alert("Error fetching stock price.");
 }
 
-    portfolio.push({
-        symbol,
-        shares,
-        price: data.current
-    });
-
-    updatePieChart();
-
-} catch (err) {
-    alert("Error fetching stock price.");
-}
-
-
     document.getElementById("portfolioSymbol").value = "";
     document.getElementById("portfolioShares").value = "";
 }
