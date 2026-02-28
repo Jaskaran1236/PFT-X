@@ -108,7 +108,7 @@ body {
 
     <div class="card-glow p-6 rounded-xl">
       <p class="text-gray-400 text-xs">Total Portfolio Value</p>
-      <h2 class="text-3xl font-bold mt-2">£10,785.00</h2>
+      <h2 id="totalValue" class="text-3xl font-bold mt-2">£0.00</h2>
       <p class="text-xs text-gray-500 mt-1">Total portfolio: Today</p>
     </div>
 
@@ -200,6 +200,8 @@ function updatePieChart() {
 
     pieChartInstance.data.labels = labels;
     pieChartInstance.data.datasets[0].data = data;
+const total = portfolio.reduce((sum, item) => sum + item.shares, 0);
+document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
 
     pieChartInstance.update();
 }
