@@ -79,6 +79,31 @@ body {
   </button>
 </div>
   </div>
+<!-- ADD THIS RIGHT HERE -->
+<div class="flex space-x-2 mt-4">
+  <input 
+    id="portfolioSymbol"
+    type="text"
+    placeholder="Symbol (e.g. NVDA)"
+    class="px-3 py-2 rounded-md text-black"
+  />
+
+  <input 
+    id="portfolioShares"
+    type="number"
+    placeholder="Shares"
+    class="px-3 py-2 rounded-md text-black w-24"
+  />
+
+  <button 
+    onclick="addToPortfolio()"
+    class="bg-green-600 px-4 py-2 rounded-md hover:bg-green-500"
+  >
+    Add
+  </button>
+</div>
+
+<div class="grid grid-cols-4 gap-6">
 
   <div class="grid grid-cols-4 gap-6">
 
