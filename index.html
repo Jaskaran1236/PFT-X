@@ -227,8 +227,7 @@ async function addToPortfolio() {
     }
 portfolio.push({
     symbol,
-    shares,
-    
+    shares: Number(shares)
 });
 
 updatePieChart();
