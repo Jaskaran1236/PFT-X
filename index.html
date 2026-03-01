@@ -200,12 +200,15 @@ function updatePieChart() {
 
     pieChartInstance.data.labels = labels;
     pieChartInstance.data.datasets[0].data = data;
-const total = portfolio.reduce(
-    (sum, item) => sum + (item.shares * item.price),
-    0
-);
-document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
+function updatePieChart() {
+    const labels = portfolio.map(item => item.symbol);
+    const data = portfolio.map(item => item.shares);
 
+    pieChartInstance.data.labels = labels;
+    pieChartInstance.data.datasets[0].data = data;
+
+    pieChartInstance.update();
+}
     pieChartInstance.update();
 }
 async function addToPortfolio() {
