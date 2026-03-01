@@ -1,14 +1,27 @@
 export default async function handler(req, res) {
   const { symbol } = req.query;
 
-  const response = await fetch(
-    `https://your-api-provider.com?symbol=${symbol}&apikey=${process.env.API_KEY}`
-  );
+  if (!symbol) {
+    return res.status(400).json({ error: "No symbol provided" });
+  }
 
-  const data = await response.json();
+  try {
+    const response = await fetch(
+      `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`
+    );
 
-  res.status(200).json({
-    current: data.price,
-    previousClose: data.previousClose
-  });
+    const data = await response.json();
+
+    if (!data || !data.c) {
+      return res.status(404).json({ error: "Stock not found" });
+    }
+
+    res.status(200).json({
+      current: data.c,
+      previousClose: data.pc
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
 }
