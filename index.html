@@ -239,7 +239,27 @@ updatePieChart();
     document.getElementById("portfolioSymbol").value = "";
     document.getElementById("portfolioShares").value = "";
 }
-async function loadLiveData() {
+async function refreshPortfolio() {
+    let total = 0;
+
+    for (let item of portfolio) {
+        try {
+            const response = await fetch(`/api/stock?symbol=${item.symbol}`);
+            const data = await response.json();
+
+            if (!data.error) {
+                total += item.shares * data.current;
+            }
+
+        } catch (err) {
+            console.log("Refresh error:", err);
+        }
+    }
+
+    document.getElementById("totalValue").innerText =
+        "£" + total.toFixed(2);
+}
+  async function loadLiveData() {
   const symbol = document.getElementById("stockInput").value.toUpperCase();
   if (!symbol) {
     alert("Please enter a stock symbol.");
@@ -269,6 +289,7 @@ async function loadLiveData() {
   }
 }
 loadLiveData();
+  setInterval(refreshPortfolio, 15000);
 </script>
 
 </body>
