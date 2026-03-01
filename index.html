@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PFT-X</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -12,286 +12,127 @@
 body {
   background: radial-gradient(circle at top left, #0b1220, #0f172a);
 }
-
 .card-glow {
   background: rgba(30, 41, 59, 0.85);
   backdrop-filter: blur(6px);
   box-shadow: 0 0 25px rgba(59,130,246,0.15);
 }
-
-.chart-glow canvas {
-  filter: drop-shadow(0px 0px 6px rgba(59,130,246,0.4));
-}
-
-.sidebar-active {
-  background: rgba(59,130,246,0.15);
-  border-left: 3px solid #3b82f6;
-}
 </style>
 </head>
 
-<body class="text-white min-h-screen flex">
+<body class="text-white min-h-screen p-8">
 
-<div class="w-64 bg-slate-900 p-6 flex flex-col justify-between shadow-2xl">
+<h1 class="text-3xl font-bold mb-6">PFT-X</h1>
 
-  <div>
-    <h1 class="text-2xl font-bold">PFT-X</h1>
-    <p class="text-sm text-gray-400 mb-6">Personal Financial Tech Intelligence</p>
-
-    <nav class="flex flex-col space-y-3 text-gray-300 text-sm">
-      <div class="sidebar-active px-3 py-2 rounded">Dashboard</div>
-      <div class="hover:text-white px-3 py-2">Portfolio</div>
-      <div class="hover:text-white px-3 py-2">Risk Analytics</div>
-      <div class="hover:text-white px-3 py-2">Monte Carlo</div>
-      <div class="hover:text-white px-3 py-2">Market News</div>
-      <div class="hover:text-white px-3 py-2">Long-Term Tools</div>
-      <div class="hover:text-white px-3 py-2">Settings</div>
-    </nav>
-  </div>
-
-  <div class="text-xs text-gray-500 opacity-70">
-    <div>Founder: Jaskaran Daudher</div>
-    <div>Financial Structuring: Rohan Khosla</div>
-    <div>UI Layout: Callum Appleby</div>
-  </div>
-
+<!-- INPUT -->
+<div class="flex space-x-2 mb-6">
+  <input id="portfolioSymbol" placeholder="Symbol (e.g. NVDA)" class="px-3 py-2 rounded text-black">
+  <input id="portfolioShares" type="number" placeholder="Shares" class="px-3 py-2 rounded text-black w-24">
+  <button onclick="addToPortfolio()" class="bg-green-600 px-4 py-2 rounded">Add</button>
 </div>
 
-<div class="flex-1 p-8 space-y-8">
-
-  <div class="flex justify-between items-center">
-    <div class="flex items-center space-x-2">
-      <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-      <span class="text-gray-400 text-sm">Markets Open</span>
-    </div>
-  <div class="flex space-x-2">
-  <input 
-    id="stockInput"
-    type="text"
-    placeholder="Enter Symbol (e.g. TSLA)"
-    class="px-3 py-2 rounded-md text-black"
-  />
-  <button 
-    onclick="loadLiveData()"
-    class="bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-500"
-  >
-    Load
-  </button>
-</div>
+<!-- CARDS -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+  <div class="card-glow p-6 rounded">
+    <p>Total Portfolio Value</p>
+    <h2 id="totalValue" class="text-3xl font-bold">£0.00</h2>
   </div>
-<!-- ADD THIS RIGHT HERE -->
-<div class="flex space-x-2 mt-4">
-  <input 
-    id="portfolioSymbol"
-    type="text"
-    placeholder="Symbol (e.g. NVDA)"
-    class="px-3 py-2 rounded-md text-black"
-  />
 
-  <input 
-    id="portfolioShares"
-    type="number"
-    placeholder="Shares"
-    class="px-3 py-2 rounded-md text-black w-24"
-  />
+  <div class="card-glow p-6 rounded">
+    <p>Total Positions</p>
+    <h2 id="positionCount" class="text-3xl font-bold">0</h2>
+  </div>
 
-  <button 
-    onclick="addToPortfolio()"
-    class="bg-green-600 px-4 py-2 rounded-md hover:bg-green-500"
-  >
-    Add
-  </button>
+  <div class="card-glow p-6 rounded">
+    <p>Last Updated</p>
+    <h2 id="lastUpdated" class="text-xl font-bold">-</h2>
+  </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-
-    <div class="card-glow p-6 rounded-xl">
-      <p class="text-gray-400 text-xs">Total Portfolio Value</p>
-      <h2 id="totalValue" class="text-3xl font-bold mt-2">£0.00</h2>
-      <p class="text-xs text-gray-500 mt-1">Total portfolio: Today</p>
-    </div>
-
-    <div class="card-glow p-6 rounded-xl">
-      <p class="text-gray-400 text-xs">Profit / Loss</p>
-      <h2 class="text-3xl font-bold mt-2 text-green-400">+£535.00</h2>
-      <p class="text-xs text-green-400 mt-1">+5.23%</p>
-    </div>
-
-    <div class="card-glow p-6 rounded-xl">
-      <p class="text-gray-400 text-xs">Risk Score</p>
-      <h2 class="text-3xl font-bold mt-2">62</h2>
-      <p class="text-xs text-gray-400 mt-1">Moderate Risk</p>
-    </div>
-
-    <div class="card-glow p-6 rounded-xl chart-glow">
-      <p class="text-gray-400 text-xs">Volatility %</p>
-      <h2 class="text-3xl font-bold mt-2">1.58%</h2>
-      <canvas id="miniChart" height="60"></canvas>
-    </div>
-
-  </div>
-
-  <div class="grid grid-cols-3 gap-6">
-
-    <div class="card-glow p-6 rounded-xl chart-glow">
-      <h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
-      <canvas id="pieChart"></canvas>
-    </div>
-
-    <div class="card-glow p-6 rounded-xl chart-glow">
-      <h3 class="mb-4 font-semibold">Risk Score</h3>
-      <canvas id="riskChart"></canvas>
-    </div>
-
-    <div class="card-glow p-6 rounded-xl">
-      <h3 class="mb-4 font-semibold">AI Insights</h3>
-      <div class="text-sm text-gray-300 space-y-3">
-        <div class="bg-slate-700 p-3 rounded">Too much volatility detected. Consider selling high-risk assets.</div>
-        <div class="bg-slate-700 p-3 rounded">AAPL shows near-term momentum. Consider increasing exposure.</div>
-      </div>
-    </div>
-
-  </div>
-
+<!-- CHART -->
+<div class="card-glow p-6 rounded">
+  <h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
+  <canvas id="pieChart"></canvas>
 </div>
 
 <script>
-
 let portfolio = [];
 let pieChartInstance = null;
-new Chart(document.getElementById('miniChart'), {
-  type: 'line',
-  data: {
-    labels: ['','','','','',''],
-    datasets: [{
-      data: [1.2,1.4,1.1,1.5,1.6,1.58],
-      borderColor: '#3b82f6',
-      tension: 0.4
-    }]
-  },
-  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
-});
+
+/* -------- CHART INIT -------- */
 pieChartInstance = new Chart(document.getElementById('pieChart'), {
   type: 'doughnut',
   data: {
-    labels: ['AAPL','TSLA','AMZN'],
+    labels: [],
     datasets: [{
-      data: [40,30,30],
-      backgroundColor: ['#3b82f6','#f59e0b','#10b981']
+      data: [],
+      backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6']
     }]
   }
 });
 
-new Chart(document.getElementById('riskChart'), {
-  type: 'line',
-  data: {
-    labels: ['Jan','Feb','Mar','Apr','May'],
-    datasets: [{
-      data: [50,55,60,58,62],
-      borderColor: '#3b82f6',
-      tension: 0.4
-    }]
-  }
-});
-function updatePieChart() {
-    const labels = portfolio.map(item => item.symbol);
-    const data = portfolio.map(item => item.shares);
-
-    pieChartInstance.data.labels = labels;
-    pieChartInstance.data.datasets[0].data = data;
-function updatePieChart() {
-    const labels = portfolio.map(item => item.symbol);
-    const data = portfolio.map(item => item.shares);
-
-    pieChartInstance.data.labels = labels;
-    pieChartInstance.data.datasets[0].data = data;
-
-    pieChartInstance.update();
-}
-    pieChartInstance.update();
-}
+/* -------- ADD STOCK -------- */
 async function addToPortfolio() {
-    const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
-    const shares = parseFloat(document.getElementById("portfolioShares").value);
+  const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
+  const shares = Number(document.getElementById("portfolioShares").value);
 
-    if (!symbol || !shares) {
-        alert("Enter symbol and shares.");
-        return;
-    }
-
-    try {
-    const response = await fetch(`/api/stock?symbol=${symbol}`);
-    const data = await response.json();
-
-    if (data.error) {
-        alert("Stock not found.");
-        return;
-    }
-portfolio.push({
-    symbol,
-    shares: Number(shares)
-});
-
-updatePieChart();
-      await refreshPortfolio();
-} catch (err) {
-    alert("Error fetching stock price.");
-}
-
-    document.getElementById("portfolioSymbol").value = "";
-    document.getElementById("portfolioShares").value = "";
-}
-async function refreshPortfolio() {
-    let total = 0;
-
-    for (let item of portfolio) {
-        try {
-            const response = await fetch(`/api/stock?symbol=${item.symbol}`);
-            const data = await response.json();
-total += Number(item.shares) * 100;
-}
-            }
-
-        } catch (err) {
-            console.log("Refresh error:", err);
-        }
-    }
-
-    document.getElementById("totalValue").innerText =
-        "£" + total.toFixed(2);
-}
-  async function loadLiveData() {
-  const symbol = document.getElementById("stockInput").value.toUpperCase();
-  if (!symbol) {
-    alert("Please enter a stock symbol.");
+  if (!symbol || !shares) {
+    alert("Enter symbol and shares");
     return;
   }
 
-  try {
-    const response = await fetch(`/api/stock?symbol=${symbol}`);
-    const data = await response.json();
+  portfolio.push({
+    symbol,
+    shares,
+    currentPrice: 0
+  });
 
-    if (data.error) {
-      alert("Stock not found.");
-      return;
-    }
+  document.getElementById("portfolioSymbol").value = "";
+  document.getElementById("portfolioShares").value = "";
 
-    // Update Total Portfolio Value card dynamically
-    document.querySelectorAll("h2")[0].innerText = `£${data.current.toFixed(2)}`;
-
-    // Update Profit / Loss
-    const change = ((data.current - data.previousClose) / data.previousClose) * 100;
-    document.querySelectorAll("h2")[1].innerText =
-      (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
-
-  } catch (error) {
-    console.error(error);
-    alert("Error loading stock data.");
-  }
+  await refreshPortfolio();
 }
-loadLiveData();
-  setInterval(refreshPortfolio, 15000);
+
+/* -------- REFRESH PORTFOLIO -------- */
+async function refreshPortfolio() {
+  let total = 0;
+
+  for (let item of portfolio) {
+    try {
+      const response = await fetch(`/api/stock?symbol=${item.symbol}`);
+      const data = await response.json();
+
+      if (!data.error && data.current) {
+        item.currentPrice = Number(data.current);
+        total += item.shares * item.currentPrice;
+      }
+
+    } catch (err) {
+      console.log("API error:", err);
+    }
+  }
+
+  document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
+  document.getElementById("positionCount").innerText = portfolio.length;
+  document.getElementById("lastUpdated").innerText =
+    new Date().toLocaleTimeString();
+
+  updatePieChart();
+}
+
+/* -------- UPDATE CHART -------- */
+function updatePieChart() {
+  const labels = portfolio.map(item => item.symbol);
+  const data = portfolio.map(item => item.shares * item.currentPrice);
+
+  pieChartInstance.data.labels = labels;
+  pieChartInstance.data.datasets[0].data = data;
+  pieChartInstance.update();
+}
+
+/* -------- AUTO REFRESH -------- */
+setInterval(refreshPortfolio, 15000);
+
 </script>
 
 </body>
