@@ -249,8 +249,7 @@ async function refreshPortfolio() {
         try {
             const response = await fetch(`/api/stock?symbol=${item.symbol}`);
             const data = await response.json();
-if (!data.error && !isNaN(item.shares) && !isNaN(data.current)) {
-    total += Number(item.shares) * Number(data.current);
+total += Number(item.shares) * 100;
 }
             }
 
