@@ -1,280 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PFT-X Quant Engine</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PFT-X Quant Terminal</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script defer src="quantEngine.js"></script>
 
 <style>
 body {
-  background: radial-gradient(circle at top left, #0b1220, #0f172a);
+  background: #0f172a;
 }
-.card-glow {
-  background: rgba(30, 41, 59, 0.9);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 25px rgba(59,130,246,0.12);
-}
-.alert-box {
-  animation: pulse 2s infinite;
+.card {
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 </style>
 </head>
 
-<body class="text-white min-h-screen p-4 sm:p-8">
+<body class="text-gray-200 p-6">
 
-<!-- ALERT BANNER -->
-<div id="alertContainer" class="space-y-2 mb-4"></div>
-
-<h1 class="text-2xl sm:text-3xl font-semibold mb-6">
-PFT-X Quant Portfolio Intelligence Engine
+<h1 class="text-3xl font-semibold mb-6 tracking-tight">
+PFT-X Quant Intelligence
 </h1>
 
 <!-- INPUT -->
-<div class="flex flex-wrap gap-2 mb-6">
-  <input id="portfolioSymbol" placeholder="Symbol (e.g. NVDA)" class="px-3 py-2 rounded text-black">
-  <input id="portfolioShares" type="number" placeholder="Shares" class="px-3 py-2 rounded text-black w-24">
-  <button onclick="addToPortfolio()" class="bg-green-600 px-4 py-2 rounded">Add</button>
+<div class="flex gap-2 mb-6">
+  <input id="symbolInput" placeholder="Symbol (NVDA)"
+    class="px-3 py-2 text-black rounded">
+  <input id="sharesInput" type="number" placeholder="Shares"
+    class="px-3 py-2 text-black rounded w-24">
+  <button onclick="QuantEngine.addAsset()"
+    class="bg-blue-600 px-4 py-2 rounded">
+    Add
+  </button>
 </div>
 
-<!-- METRICS GRID -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+<!-- METRICS -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 
-  <div class="card-glow p-4 rounded">
+  <div class="card p-4 rounded">
     <p>Total Value</p>
-    <h2 id="totalValue" class="text-2xl font-semibold">£0.00</h2>
+    <h2 id="totalValue" class="text-2xl font-semibold">£0</h2>
   </div>
 
-  <div class="card-glow p-4 rounded">
+  <div class="card p-4 rounded">
     <p>Volatility</p>
-    <h2 id="volatilityValue" class="text-2xl font-semibold">0%</h2>
+    <h2 id="volatility" class="text-2xl font-semibold">0%</h2>
   </div>
 
-  <div class="card-glow p-4 rounded">
+  <div class="card p-4 rounded">
     <p>Sharpe</p>
-    <h2 id="sharpeValue" class="text-2xl font-semibold">0.00</h2>
+    <h2 id="sharpe" class="text-2xl font-semibold">0</h2>
   </div>
 
-  <div class="card-glow p-4 rounded">
+  <div class="card p-4 rounded">
     <p>Max Drawdown</p>
-    <h2 id="drawdownValue" class="text-2xl font-semibold">0%</h2>
-  </div>
-
-  <div class="card-glow p-4 rounded">
-    <p>Beta vs SPY</p>
-    <h2 id="betaValue" class="text-2xl font-semibold">0.00</h2>
+    <h2 id="drawdown" class="text-2xl font-semibold">0%</h2>
   </div>
 
 </div>
 
-<!-- PERFORMANCE -->
-<div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4">Portfolio Performance</h3>
-  <div class="relative w-full h-64">
+<!-- CHARTS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <div class="card p-6 rounded">
+    <h3 class="mb-4">Performance</h3>
     <canvas id="performanceChart"></canvas>
   </div>
-</div>
 
-<!-- MONTE CARLO -->
-<div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4">Monte Carlo Projection</h3>
-  <div class="relative w-full h-64">
-    <canvas id="monteChart"></canvas>
+  <div class="card p-6 rounded">
+    <h3 class="mb-4">Efficient Frontier</h3>
+    <canvas id="frontierChart"></canvas>
   </div>
+
 </div>
-
-<!-- AI INSIGHTS -->
-<div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4">AI Risk Intelligence</h3>
-  <div id="aiInsights" class="space-y-2 text-sm"></div>
-</div>
-
-<!-- NEWS -->
-<div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4">Market News Impact</h3>
-  <div id="newsContainer" class="space-y-2 text-sm"></div>
-</div>
-
-<script>
-let portfolio = [];
-let portfolioHistory = [];
-let marketHistory = [];
-
-const performanceChart = new Chart(document.getElementById('performanceChart'), {
-  type: 'line',
-  data: { labels: [], datasets: [{ data: [], borderColor: "#3b82f6", tension: 0.4 }] },
-  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
-});
-
-const monteChart = new Chart(document.getElementById('monteChart'), {
-  type: 'line',
-  data: { labels: [], datasets: [] },
-  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
-});
-
-/* ========================
-   CORE REFRESH
-======================== */
-
-async function addToPortfolio(){
-  const symbol = portfolioSymbol.value.toUpperCase();
-  const shares = Number(portfolioShares.value);
-  if(!symbol || !shares) return;
-  portfolio.push({symbol,shares});
-  portfolioSymbol.value="";
-  portfolioShares.value="";
-  await refreshPortfolio();
-}
-
-async function refreshPortfolio(){
-
-  let total = 0;
-
-  for(let item of portfolio){
-    const res = await fetch(`/api/stock?symbol=${item.symbol}`);
-    const data = await res.json();
-    item.current = data.current;
-    total += item.shares * data.current;
-  }
-
-  const spy = await fetch(`/api/stock?symbol=SPY`);
-  const spyData = await spy.json();
-
-  marketHistory.push(spyData.current);
-  if(marketHistory.length>30) marketHistory.shift();
-
-  portfolioHistory.push(total);
-  if(portfolioHistory.length>30) portfolioHistory.shift();
-
-  updateMetrics(total);
-  updateCharts(total);
-  generateInsights();
-  checkAlerts(total);
-  loadNews();
-}
-
-/* ========================
-   METRICS
-======================== */
-
-function volatility(data){
-  if(data.length<2) return 0;
-  let returns=[];
-  for(let i=1;i<data.length;i++)
-    returns.push((data[i]-data[i-1])/data[i-1]);
-  let mean=returns.reduce((a,b)=>a+b,0)/returns.length;
-  let variance=returns.reduce((a,r)=>a+(r-mean)**2,0)/returns.length;
-  return Math.sqrt(variance)*100;
-}
-
-function sharpe(data){
-  let vol=volatility(data);
-  if(vol===0) return 0;
-  let returns=[];
-  for(let i=1;i<data.length;i++)
-    returns.push((data[i]-data[i-1])/data[i-1]);
-  let mean=returns.reduce((a,b)=>a+b,0)/returns.length;
-  return (mean/(vol/100)).toFixed(2);
-}
-
-function updateMetrics(total){
-  document.getElementById("totalValue").innerText="£"+total.toFixed(2);
-  document.getElementById("volatilityValue").innerText=volatility(portfolioHistory).toFixed(2)+"%";
-  document.getElementById("sharpeValue").innerText=sharpe(portfolioHistory);
-}
-
-/* ========================
-   ALERT ENGINE
-======================== */
-
-function checkAlerts(total){
-  const container=document.getElementById("alertContainer");
-  container.innerHTML="";
-
-  const vol=volatility(portfolioHistory);
-  const sh=sharpe(portfolioHistory);
-
-  if(vol>5){
-    container.innerHTML+=`<div class="alert-box bg-red-600 p-3 rounded">
-    High volatility detected (${vol.toFixed(2)}%)
-    </div>`;
-  }
-
-  if(sh<0.3){
-    container.innerHTML+=`<div class="alert-box bg-yellow-600 p-3 rounded">
-    Low risk-adjusted return (Sharpe ${sh})
-    </div>`;
-  }
-}
-
-/* ========================
-   AI INSIGHTS
-======================== */
-
-function generateInsights(){
-  const box=document.getElementById("aiInsights");
-  box.innerHTML="";
-  const vol=volatility(portfolioHistory);
-  const sh=sharpe(portfolioHistory);
-
-  if(vol>4){
-    box.innerHTML+=`<div class="bg-red-500/20 p-3 rounded">
-    Volatility elevated — portfolio experiencing larger price swings.
-    </div>`;
-  }
-
-  if(sh<0.5){
-    box.innerHTML+=`<div class="bg-yellow-500/20 p-3 rounded">
-    Risk-adjusted returns are weak — returns not compensating for volatility.
-    </div>`;
-  }
-
-  if(box.innerHTML===""){
-    box.innerHTML=`<div class="bg-green-500/20 p-3 rounded">
-    Portfolio metrics within stable thresholds.
-    </div>`;
-  }
-}
-
-/* ========================
-   NEWS WITH IMPACT
-======================== */
-
-async function loadNews(){
-  const res=await fetch("/api/news");
-  const news=await res.json();
-  const container=document.getElementById("newsContainer");
-  container.innerHTML="";
-
-  news.forEach(item=>{
-    let affected=portfolio.find(p=>item.headline.includes(p.symbol));
-    let sentiment="Neutral";
-    let color="bg-gray-500/20";
-
-    if(/surge|beat|growth|upgrade/i.test(item.headline)){
-      sentiment="Positive";
-      color="bg-green-500/20";
-    }
-
-    if(/fall|drop|downgrade|lawsuit/i.test(item.headline)){
-      sentiment="Negative";
-      color="bg-red-500/20";
-    }
-
-    container.innerHTML+=`
-      <div class="${color} p-3 rounded">
-        <strong>${item.headline}</strong><br>
-        ${affected ? "Affects: "+affected.symbol+"<br>" : "Market-wide impact<br>"}
-        Sentiment: ${sentiment}
-      </div>`;
-  });
-}
-
-refreshPortfolio();
-setInterval(refreshPortfolio,15000);
-</script>
 
 </body>
 </html>
