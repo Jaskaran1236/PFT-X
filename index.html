@@ -32,7 +32,7 @@ body {
 </div>
 
 <!-- CARDS -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
   <div class="card-glow p-6 rounded">
     <p>Total Portfolio Value</p>
     <h2 id="totalValue" class="text-3xl font-bold">£0.00</h2>
@@ -40,6 +40,15 @@ body {
 <div class="card-glow p-6 rounded">
   <p>Profit / Loss</p>
   <h2 id="profitValue" class="text-3xl font-bold">£0.00</h2>
+</div>
+    <div class="card-glow p-6 rounded">
+  <p>Risk Score</p>
+  <h2 id="riskScore" class="text-3xl font-bold">0</h2>
+</div>
+
+<div class="card-glow p-6 rounded">
+  <p>Volatility %</p>
+  <h2 id="volatilityValue" class="text-3xl font-bold">0%</h2>
 </div>
   <div class="card-glow p-6 rounded">
     <p>Total Positions</p>
@@ -128,6 +137,17 @@ async function refreshPortfolio() {
   const percent = totalPrevious
     ? ((profit / totalPrevious) * 100)
     : 0;
+  // Volatility approximation
+const volatility = Math.abs(percent);
+
+// Risk score scaling (0–100)
+const riskScore = Math.min(100, Math.round(volatility * 5));
+
+document.getElementById("volatilityValue").innerText =
+  volatility.toFixed(2) + "%";
+
+document.getElementById("riskScore").innerText =
+  riskScore;
 
   const profitElement = document.getElementById("profitValue");
 
