@@ -32,12 +32,15 @@ body {
 </div>
 
 <!-- CARDS -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
   <div class="card-glow p-6 rounded">
     <p>Total Portfolio Value</p>
     <h2 id="totalValue" class="text-3xl font-bold">£0.00</h2>
   </div>
-
+<div class="card-glow p-6 rounded">
+  <p>Profit / Loss</p>
+  <h2 id="profitValue" class="text-3xl font-bold">£0.00</h2>
+</div>
   <div class="card-glow p-6 rounded">
     <p>Total Positions</p>
     <h2 id="positionCount" class="text-3xl font-bold">0</h2>
@@ -96,6 +99,7 @@ async function addToPortfolio() {
 /* -------- REFRESH PORTFOLIO -------- */
 async function refreshPortfolio() {
   let total = 0;
+  let totalPrevious = 0;
 
   for (let item of portfolio) {
     try {
@@ -104,7 +108,10 @@ async function refreshPortfolio() {
 
       if (!data.error && data.current) {
         item.currentPrice = Number(data.current);
+        item.previousClose = Number(data.previousClose);
+
         total += item.shares * item.currentPrice;
+        totalPrevious += item.shares * item.previousClose;
       }
 
     } catch (err) {
@@ -112,8 +119,31 @@ async function refreshPortfolio() {
     }
   }
 
-  document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
-  document.getElementById("positionCount").innerText = portfolio.length;
+  // Total Value
+  document.getElementById("totalValue").innerText =
+    "£" + total.toFixed(2);
+
+  // Profit / Loss
+  const profit = total - totalPrevious;
+  const percent = totalPrevious
+    ? ((profit / totalPrevious) * 100)
+    : 0;
+
+  const profitElement = document.getElementById("profitValue");
+
+  profitElement.innerText =
+    (profit >= 0 ? "+" : "") +
+    "£" + profit.toFixed(2) +
+    " (" + percent.toFixed(2) + "%)";
+
+  profitElement.className =
+    profit >= 0
+      ? "text-green-400 text-3xl font-bold"
+      : "text-red-400 text-3xl font-bold";
+
+  document.getElementById("positionCount").innerText =
+    portfolio.length;
+
   document.getElementById("lastUpdated").innerText =
     new Date().toLocaleTimeString();
 
