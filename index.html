@@ -32,24 +32,27 @@ body {
 </div>
 
 <!-- CARDS -->
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
   <div class="card-glow p-6 rounded">
     <p>Total Portfolio Value</p>
     <h2 id="totalValue" class="text-3xl font-bold">£0.00</h2>
   </div>
-<div class="card-glow p-6 rounded">
-  <p>Profit / Loss</p>
-  <h2 id="profitValue" class="text-3xl font-bold">£0.00</h2>
-</div>
-    <div class="card-glow p-6 rounded">
-  <p>Risk Score</p>
-  <h2 id="riskScore" class="text-3xl font-bold">0</h2>
-</div>
 
-<div class="card-glow p-6 rounded">
-  <p>Volatility %</p>
-  <h2 id="volatilityValue" class="text-3xl font-bold">0%</h2>
-</div>
+  <div class="card-glow p-6 rounded">
+    <p>Profit / Loss</p>
+    <h2 id="profitValue" class="text-3xl font-bold">£0.00</h2>
+  </div>
+
+  <div class="card-glow p-6 rounded">
+    <p>Risk Score</p>
+    <h2 id="riskScore" class="text-3xl font-bold">0</h2>
+  </div>
+
+  <div class="card-glow p-6 rounded">
+    <p>Volatility %</p>
+    <h2 id="volatilityValue" class="text-3xl font-bold">0%</h2>
+  </div>
+
   <div class="card-glow p-6 rounded">
     <p>Total Positions</p>
     <h2 id="positionCount" class="text-3xl font-bold">0</h2>
@@ -60,77 +63,66 @@ body {
     <h2 id="lastUpdated" class="text-xl font-bold">-</h2>
   </div>
 </div>
-<!-- MINI LIVE CHART -->
+
+<!-- PERFORMANCE CHART -->
 <div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-2 font-semibold">Live Price Trend</h3>
-  <canvas id="miniChart" height="80"></canvas>
+  <h3 class="mb-2 font-semibold">Portfolio Performance</h3>
+  <canvas id="performanceChart" height="100"></canvas>
 </div>
 
-<!-- CHART -->
+<!-- MONTE CARLO -->
+<div class="card-glow p-6 rounded mb-6">
+  <h3 class="mb-2 font-semibold">Monte Carlo Simulation (30 Days)</h3>
+  <canvas id="monteChart" height="120"></canvas>
+</div>
+
+<!-- AI INSIGHTS -->
+<div class="card-glow p-6 rounded mb-6">
+  <h3 class="mb-4 font-semibold">AI Insights</h3>
+  <div id="aiInsights" class="space-y-2 text-sm"></div>
+</div>
+
+<!-- NEWS -->
+<div class="card-glow p-6 rounded mb-6">
+  <h3 class="mb-4 font-semibold">Market News</h3>
+  <div id="newsContainer" class="space-y-2 text-sm"></div>
+</div>
+
+<!-- ALLOCATION -->
 <div class="card-glow p-6 rounded">
   <h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
   <canvas id="pieChart"></canvas>
 </div>
 
 <script>
+
 let portfolio = [];
-let pieChartInstance = null;
-/* 🔥 MINI CHART STARTS HERE */
-let miniChartInstance = null;
+let portfolioHistory = [];
 
-function initMiniChart() {
-  const ctx = document.getElementById("miniChart");
-
-  miniChartInstance = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: [],
-      datasets: [{
-        data: [],
-        borderColor: "#3b82f6",
-        tension: 0.4,
-        fill: false
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false }},
-      scales: {
-        x: { display: false },
-        y: { display: false }
-      }
-    }
-  });
-}
-
-initMiniChart();
-/* 🔥 MINI CHART ENDS HERE */
-/* -------- CHART INIT -------- */
-pieChartInstance = new Chart(document.getElementById('pieChart'), {
+let pieChartInstance = new Chart(document.getElementById('pieChart'), {
   type: 'doughnut',
-  data: {
-    labels: [],
-    datasets: [{
-      data: [],
-      backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6']
-    }]
-  }
+  data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }
 });
 
-/* -------- ADD STOCK -------- */
+let performanceChart = new Chart(document.getElementById('performanceChart'), {
+  type: 'line',
+  data: { labels: [], datasets: [{ data: [], borderColor: "#3b82f6", tension: 0.4 }] },
+  options: { plugins: { legend: { display: false } } }
+});
+
+let monteChart = new Chart(document.getElementById('monteChart'), {
+  type: 'line',
+  data: { labels: [], datasets: [] },
+  options: { plugins: { legend: { display: false } } }
+});
+
 async function addToPortfolio() {
   const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
   const shares = Number(document.getElementById("portfolioShares").value);
 
-  if (!symbol || !shares) {
-    alert("Enter symbol and shares");
-    return;
-  }
+  if (!symbol || !shares) return;
 
-  portfolio.push({
-    symbol,
-    shares,
-    currentPrice: 0
-  });
+  portfolio.push({ symbol, shares });
 
   document.getElementById("portfolioSymbol").value = "";
   document.getElementById("portfolioShares").value = "";
@@ -138,92 +130,120 @@ async function addToPortfolio() {
   await refreshPortfolio();
 }
 
-/* -------- REFRESH PORTFOLIO -------- */
 async function refreshPortfolio() {
   let total = 0;
   let totalPrevious = 0;
 
   for (let item of portfolio) {
-    try {
-      const response = await fetch(`/api/stock?symbol=${item.symbol}`);
-      const data = await response.json();
+    const response = await fetch(`/api/stock?symbol=${item.symbol}`);
+    const data = await response.json();
 
-      if (!data.error && data.current) {
-        if (!item.history) item.history = [];
-item.history.push(Number(data.current));
+    if (data.current) {
+      item.currentPrice = data.current;
+      item.previousClose = data.previousClose;
 
-if (item.history.length > 20) {
-  item.history.shift();
-}
-        item.currentPrice = Number(data.current);
-        item.previousClose = Number(data.previousClose);
-
-        total += item.shares * item.currentPrice;
-        totalPrevious += item.shares * item.previousClose;
-      }
-
-    } catch (err) {
-      console.log("API error:", err);
+      total += item.shares * item.currentPrice;
+      totalPrevious += item.shares * item.previousClose;
     }
   }
 
-  // Total Value
-  document.getElementById("totalValue").innerText =
-    "£" + total.toFixed(2);
-
-  // Profit / Loss
   const profit = total - totalPrevious;
-  const percent = totalPrevious
-    ? ((profit / totalPrevious) * 100)
-    : 0;
-  // Volatility approximation
-const volatility = Math.abs(percent);
+  const percent = totalPrevious ? (profit / totalPrevious) * 100 : 0;
+  const volatility = Math.abs(percent);
+  const riskScore = Math.min(100, Math.round(volatility * 5));
 
-// Risk score scaling (0–100)
-const riskScore = Math.min(100, Math.round(volatility * 5));
+  portfolioHistory.push(total);
+  if (portfolioHistory.length > 30) portfolioHistory.shift();
 
-document.getElementById("volatilityValue").innerText =
-  volatility.toFixed(2) + "%";
+  document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
+  document.getElementById("profitValue").innerText =
+    (profit >= 0 ? "+" : "") + "£" + profit.toFixed(2) + " (" + percent.toFixed(2) + "%)";
+  document.getElementById("profitValue").className =
+    profit >= 0 ? "text-green-400 text-3xl font-bold" : "text-red-400 text-3xl font-bold";
 
-document.getElementById("riskScore").innerText =
-  riskScore;
+  document.getElementById("volatilityValue").innerText = volatility.toFixed(2) + "%";
+  document.getElementById("riskScore").innerText = riskScore;
+  document.getElementById("positionCount").innerText = portfolio.length;
+  document.getElementById("lastUpdated").innerText = new Date().toLocaleTimeString();
 
-  const profitElement = document.getElementById("profitValue");
-
-  profitElement.innerText =
-    (profit >= 0 ? "+" : "") +
-    "£" + profit.toFixed(2) +
-    " (" + percent.toFixed(2) + "%)";
-
-  profitElement.className =
-    profit >= 0
-      ? "text-green-400 text-3xl font-bold"
-      : "text-red-400 text-3xl font-bold";
-
-  document.getElementById("positionCount").innerText =
-    portfolio.length;
-
-  document.getElementById("lastUpdated").innerText =
-    new Date().toLocaleTimeString();
-
-  updatePieChart();
+  updateCharts(total, volatility);
+  generateInsights(total, profit, percent, volatility);
 }
 
-/* -------- UPDATE CHART -------- */
-function updatePieChart() {
-  const labels = portfolio.map(item => item.symbol);
-  const data = portfolio.map(item => item.shares * item.currentPrice);
+function updateCharts(total, volatility) {
 
-  pieChartInstance.data.labels = labels;
-  pieChartInstance.data.datasets[0].data = data;
+  performanceChart.data.labels = portfolioHistory.map((_, i) => i);
+  performanceChart.data.datasets[0].data = portfolioHistory;
+  performanceChart.update();
+
+  pieChartInstance.data.labels = portfolio.map(p => p.symbol);
+  pieChartInstance.data.datasets[0].data = portfolio.map(p => p.shares * p.currentPrice);
   pieChartInstance.update();
+
+  runMonteCarlo(total, volatility);
 }
 
-/* -------- AUTO REFRESH -------- */
-  refreshPortfolio();
+function runMonteCarlo(currentValue, volatilityPercent) {
+  const days = 30;
+  const simulations = 30;
+  const datasets = [];
+
+  for (let s = 0; s < simulations; s++) {
+    let prices = [currentValue];
+
+    for (let d = 1; d <= days; d++) {
+      const shock = (Math.random() - 0.5) * 2 * (volatilityPercent / 100);
+      prices.push(prices[d - 1] * (1 + shock));
+    }
+
+    datasets.push({
+      data: prices,
+      borderColor: "rgba(59,130,246,0.15)",
+      borderWidth: 1,
+      tension: 0.3
+    });
+  }
+
+  monteChart.data.labels = Array.from({ length: days + 1 }, (_, i) => i);
+  monteChart.data.datasets = datasets;
+  monteChart.update();
+}
+
+function generateInsights(total, profit, percent, volatility) {
+  const container = document.getElementById("aiInsights");
+  container.innerHTML = "";
+
+  if (volatility > 5)
+    container.innerHTML += `<div class="bg-red-500/20 p-2 rounded">High volatility detected.</div>`;
+
+  if (percent > 5)
+    container.innerHTML += `<div class="bg-green-500/20 p-2 rounded">Strong gains detected.</div>`;
+
+  if (percent < -5)
+    container.innerHTML += `<div class="bg-yellow-500/20 p-2 rounded">Drawdown exceeding 5%.</div>`;
+
+  if (portfolio.length === 1)
+    container.innerHTML += `<div class="bg-blue-500/20 p-2 rounded">Portfolio concentration risk.</div>`;
+}
+
+async function loadNews() {
+  const res = await fetch("/api/news");
+  const news = await res.json();
+  const container = document.getElementById("newsContainer");
+  container.innerHTML = "";
+
+  news.forEach(item => {
+    container.innerHTML += `
+      <div class="bg-slate-700 p-2 rounded hover:bg-slate-600 transition">
+        <a href="${item.url}" target="_blank">${item.headline}</a>
+      </div>`;
+  });
+}
+
+loadNews();
+refreshPortfolio();
 setInterval(refreshPortfolio, 15000);
 
 </script>
-
 </body>
 </html>
