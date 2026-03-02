@@ -70,7 +70,35 @@ body {
 <script>
 let portfolio = [];
 let pieChartInstance = null;
+/* 🔥 MINI CHART STARTS HERE */
+let miniChartInstance = null;
 
+function initMiniChart() {
+  const ctx = document.getElementById("miniChart");
+
+  miniChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [{
+        data: [],
+        borderColor: "#3b82f6",
+        tension: 0.4,
+        fill: false
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false }},
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      }
+    }
+  });
+}
+
+initMiniChart();
+/* 🔥 MINI CHART ENDS HERE */
 /* -------- CHART INIT -------- */
 pieChartInstance = new Chart(document.getElementById('pieChart'), {
   type: 'doughnut',
@@ -116,6 +144,12 @@ async function refreshPortfolio() {
       const data = await response.json();
 
       if (!data.error && data.current) {
+        if (!item.history) item.history = [];
+item.history.push(Number(data.current));
+
+if (item.history.length > 20) {
+  item.history.shift();
+}
         item.currentPrice = Number(data.current);
         item.previousClose = Number(data.previousClose);
 
