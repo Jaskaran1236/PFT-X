@@ -104,17 +104,68 @@ let pieChartInstance = new Chart(document.getElementById('pieChart'), {
   data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }
 });
 
-let performanceChart = new Chart(document.getElementById('performanceChart'), {
-  type: 'line',
-  data: { labels: [], datasets: [{ data: [], borderColor: "#3b82f6", tension: 0.4 }] },
-  options: { plugins: { legend: { display: false } } }
-});
-
-let monteChart = new Chart(document.getElementById('monteChart'), {
-  type: 'line',
-  data: { labels: [], datasets: [] },
-  options: { plugins: { legend: { display: false } } }
-});
+options: {
+  plugins: { legend: { display: false } },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: "Time (Intervals)",
+        color: "#9ca3af",
+        font: { size: 12 }
+      },
+      ticks: {
+        color: "#9ca3af",
+        font: { size: 10 }
+      },
+      grid: { color: "rgba(255,255,255,0.05)" }
+    },
+    y: {
+      title: {
+        display: true,
+        text: "Portfolio Value (£)",
+        color: "#9ca3af",
+        font: { size: 12 }
+      },
+      ticks: {
+        color: "#9ca3af",
+        font: { size: 10 }
+      },
+      grid: { color: "rgba(255,255,255,0.05)" }
+    }
+  }
+}
+options: {
+  plugins: { legend: { display: false } },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: "Days Ahead",
+        color: "#9ca3af",
+        font: { size: 12 }
+      },
+      ticks: {
+        color: "#9ca3af",
+        font: { size: 10 }
+      },
+      grid: { color: "rgba(255,255,255,0.05)" }
+    },
+    y: {
+      title: {
+        display: true,
+        text: "Projected Value (£)",
+        color: "#9ca3af",
+        font: { size: 12 }
+      },
+      ticks: {
+        color: "#9ca3af",
+        font: { size: 10 }
+      },
+      grid: { color: "rgba(255,255,255,0.05)" }
+    }
+  }
+}
 
 async function addToPortfolio() {
   const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
