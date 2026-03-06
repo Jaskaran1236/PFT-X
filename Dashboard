@@ -1,12 +1,14 @@
-
 function calculateAIScore(prices){
 
 let score = 50
 
 Object.values(prices).forEach(price =>{
 
-if(price > 100) score += 5
-else score -= 3
+if(price > 100){
+score += 5
+}else{
+score -= 3
+}
 
 })
 
@@ -25,6 +27,8 @@ const stocks = [
 
 const container = document.getElementById("heatmap")
 
+container.innerHTML=""
+
 stocks.forEach(stock=>{
 
 const change = Math.random()*6 - 3
@@ -37,9 +41,7 @@ box.style.background =
 change>0 ? "#14532d" : "#7f1d1d"
 
 box.innerHTML=`
-${stock}
-<br>
-${change.toFixed(2)}%
+${stock}<br>${change.toFixed(2)}%
 `
 
 container.appendChild(box)
@@ -74,6 +76,8 @@ position:"$2B"
 ]
 
 const table = document.getElementById("hedgeTable")
+
+table.innerHTML=""
 
 data.forEach(row=>{
 
