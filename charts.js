@@ -36,7 +36,7 @@ color:"white"
 }
 
 function runMonteCarlo(startValue){
-const ctx = document.getElementById("monteCarloChart");
+const ctx = document.getElementById("monteChart");
 if(!ctx) return;
 
 const simulations = 100;
