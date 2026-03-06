@@ -1,6 +1,6 @@
 let portfolio = []
 
-async function addStock(){
+window.addStock = async function(){
 
 const ticker = document.getElementById("ticker").value.toUpperCase()
 const shares = parseFloat(document.getElementById("shares").value)
