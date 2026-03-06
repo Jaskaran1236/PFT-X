@@ -73,5 +73,7 @@ const now = new Date().toLocaleTimeString()
 document.getElementById("lastUpdated").innerText =
 `Last updated: ${now}`
 setInterval(updateDashboard,10000)
+  setInterval(updateTickerBar,10000)
+  updateTickerBar()
 }
 }
