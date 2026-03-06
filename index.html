@@ -7,7 +7,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
 <style>
 body {
   background: radial-gradient(circle at top left, #0b1220, #0f172a);
@@ -63,7 +63,10 @@ body {
     <h2 id="lastUpdated" class="text-xl font-bold">-</h2>
   </div>
 </div>
-
+<div class="card-glow p-6 rounded mb-6">
+<h3 class="mb-2 font-semibold">3 Year Price History</h3>
+<canvas id="candleChart" height="120"></canvas>
+</div>
 <!-- PERFORMANCE CHART -->
 <div class="card-glow p-6 rounded mb-6">
   <h3 class="mb-2 font-semibold">Portfolio Performance</h3>
@@ -90,6 +93,10 @@ body {
 <div class="card-glow p-6 rounded mb-6">
   <h3 class="mb-4 font-semibold">Market Drivers</h3>
   <div id="marketDrivers" class="space-y-2 text-sm"></div>
+</div>
+  <div class="card-glow p-6 rounded mb-6">
+<h3 class="mb-4 font-semibold">Price Event Explanations</h3>
+<div id="priceEvents"></div>
 </div>
 <!-- ALLOCATION -->
 <div class="card-glow p-6 rounded">
@@ -118,7 +125,18 @@ let monteChart = new Chart(document.getElementById('monteChart'), {
   data: { labels: [], datasets: [] },
   options: { plugins: { legend: { display: false } } }
 });
-
+let candleChart = new Chart(
+  document.getElementById("candleChart"),
+  {
+    type: "candlestick",
+    data: {
+      datasets: [{
+        label: "Price",
+        data: []
+      }]
+    }
+  }
+);
 async function addToPortfolio() {
   const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
   const shares = Number(document.getElementById("portfolioShares").value);
@@ -149,7 +167,22 @@ async function refreshPortfolio() {
       totalPrevious += item.shares * item.previousClose;
     }
   }
+if (data.history) {
 
+  candleChart.data.datasets[0].data =
+    data.history.map(d => ({
+      x: new Date(d.t),
+      o: d.o,
+      h: d.h,
+      l: d.l,
+      c: d.c
+    }));
+
+  candleChart.update();
+const events= findTurningPoints(data.history);
+  showEvents(events)
+  
+}
   const profit = total - totalPrevious;
   const percent = totalPrevious ? (profit / totalPrevious) * 100 : 0;
   const volatility = Math.abs(percent);
@@ -253,7 +286,60 @@ function generateMarketDrivers() {
       </div>
     `;
   });
+function findTurningPoints(history){
 
+  const events = [];
+
+  for(let i=2;i<history.length-2;i++){
+
+    const prev = history[i-1].c;
+    const curr = history[i].c;
+    const next = history[i+1].c;
+
+    if(curr > prev && curr > next){
+      events.push({
+        type:"peak",
+        price:curr,
+        date:history[i].t
+      });
+    }
+
+    if(curr < prev && curr < next){
+      events.push({
+        type:"low",
+        price:curr,
+        date:history[i].t
+      });
+    }
+
+  }
+
+  return events;
+}
+  function showEvents(events){
+
+ const container = document.getElementById("priceEvents");
+ container.innerHTML="";
+
+ events.slice(-5).forEach(e => {
+
+   let text = "";
+
+   if(e.type==="peak")
+      text = "Sharp peak detected – likely strong buying momentum.";
+
+   if(e.type==="low")
+      text = "Price trough detected – likely market correction.";
+
+   container.innerHTML += `
+   <div class="bg-slate-700 p-2 rounded mb-2">
+   ${e.date} — ${text}
+   </div>
+   `;
+
+ });
+
+}
 }
 function generateInsights(total, profit, percent, volatility) {
   const container = document.getElementById("aiInsights");
@@ -299,7 +385,7 @@ setInterval(refreshPortfolio, 15000);
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
     
     <div class="bg-slate-800/60 p-4 rounded">
-      <h4 class="font-semibold text-white">Jaskaran Daudher</h4>
+      <h4 class="font-semibold text-white">Jaskaran Singh Daudher</h4>
       <p class="text-gray-400 mt-1">Founder & Lead Developer</p>
     </div>
 
