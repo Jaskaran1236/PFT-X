@@ -1,10 +1,15 @@
 let portfolio = []
 
-function addStock(){
+async function addStock(){
 
 const ticker = document.getElementById("ticker").value.toUpperCase()
 const shares = parseFloat(document.getElementById("shares").value)
 const buyPrice = parseFloat(document.getElementById("buyPrice").value)
+
+if(!ticker || !shares || !buyPrice){
+alert("Enter all values")
+return
+}
 
 portfolio.push({
 ticker,
@@ -12,7 +17,7 @@ shares,
 buyPrice
 })
 
-updateDashboard()
+await updateDashboard()
 
 }
 
@@ -23,7 +28,7 @@ try{
 const res = await fetch(`/api/stock?ticker=${ticker}`)
 const data = await res.json()
 
-return data.price
+return data.price || 0
 
 }catch{
 
@@ -37,7 +42,6 @@ async function updateDashboard(){
 
 let totalValue = 0
 let totalCost = 0
-
 const prices = {}
 
 for(const stock of portfolio){
