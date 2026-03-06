@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>PFT-X</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -10,14 +12,17 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
 
 <style>
+
 body{
 background: radial-gradient(circle at top left,#0b1220,#0f172a);
 }
+
 .card-glow{
 background: rgba(30,41,59,.85);
 backdrop-filter: blur(6px);
 box-shadow:0 0 25px rgba(59,130,246,.15);
 }
+
 </style>
 </head>
 
@@ -25,12 +30,14 @@ box-shadow:0 0 25px rgba(59,130,246,.15);
 
 <h1 class="text-3xl font-bold mb-6">PFT-X</h1>
 
+<!-- INPUT -->
 <div class="flex space-x-2 mb-6">
-<input id="portfolioSymbol" placeholder="Symbol (e.g NVDA)" class="px-3 py-2 rounded text-black">
+<input id="portfolioSymbol" placeholder="Symbol (NVDA)" class="px-3 py-2 rounded text-black">
 <input id="portfolioShares" type="number" placeholder="Shares" class="px-3 py-2 rounded text-black w-24">
 <button onclick="addToPortfolio()" class="bg-green-600 px-4 py-2 rounded">Add</button>
 </div>
 
+<!-- DASHBOARD CARDS -->
 <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
 
 <div class="card-glow p-6 rounded">
@@ -65,47 +72,57 @@ box-shadow:0 0 25px rgba(59,130,246,.15);
 
 </div>
 
+<!-- CANDLE CHART -->
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-2 font-semibold">3 Year Price History</h3>
 <canvas id="candleChart" height="120"></canvas>
 </div>
 
+<!-- PERFORMANCE -->
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-2 font-semibold">Portfolio Performance</h3>
-<canvas id="performanceChart" height="100"></canvas>
+<canvas id="performanceChart"></canvas>
 </div>
 
+<!-- MONTE CARLO -->
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-2 font-semibold">Monte Carlo Simulation</h3>
 <canvas id="monteChart"></canvas>
 </div>
 
+<!-- AI INSIGHTS -->
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-4 font-semibold">AI Insights</h3>
-<div id="aiInsights" class="space-y-2 text-sm"></div>
+<div id="aiInsights"></div>
 </div>
 
+<!-- NEWS -->
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-4 font-semibold">Market News</h3>
-<div id="newsContainer" class="space-y-2 text-sm"></div>
+<div id="newsContainer"></div>
 </div>
 
+<!-- MARKET DRIVERS -->
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-4 font-semibold">Market Drivers</h3>
 <div id="marketDrivers"></div>
 </div>
 
+<!-- PRICE EVENTS -->
 <div class="card-glow p-6 rounded mb-6">
-<h3 class="mb-4 font-semibold">Price Event Explanations</h3>
+<h3 class="mb-4 font-semibold">Price Events</h3>
 <div id="priceEvents"></div>
 </div>
 
+<!-- PIE -->
 <div class="card-glow p-6 rounded">
 <h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
 <canvas id="pieChart"></canvas>
 </div>
 
 <script>
+
+/* GLOBAL DATA */
 
 let portfolio=[]
 let portfolioHistory=[]
@@ -117,13 +134,11 @@ const companyNames={
 NVDA:"NVIDIA",
 AAPL:"Apple",
 MSFT:"Microsoft",
+TSLA:"Tesla",
 AMZN:"Amazon",
 GOOGL:"Alphabet",
 META:"Meta",
-TSLA:"Tesla",
-AMD:"AMD",
-NFLX:"Netflix",
-PLTR:"Palantir"
+AMD:"AMD"
 }
 
 function company(symbol){
@@ -132,7 +147,7 @@ return companyNames[symbol]||symbol
 
 /* CHARTS */
 
-const pieChartInstance=new Chart(document.getElementById("pieChart"),{
+const pieChart=new Chart(document.getElementById("pieChart"),{
 type:"doughnut",
 data:{labels:[],datasets:[{data:[],backgroundColor:["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6"]}]}
 })
@@ -151,32 +166,13 @@ options:{plugins:{legend:{display:false}}}
 
 const candleChart=new Chart(document.getElementById("candleChart"),{
 type:"candlestick",
-data:{datasets:[{label:"Price",data:[]}]}
+data:{
+datasets:[
+{label:"Price",data:[]},
+{type:"scatter",label:"Events",data:[],backgroundColor:"#f59e0b",pointRadius:6}
+]
+}
 })
-
-/* CLICK CANDLE → EXPLAIN WITH NEWS */
-
-document.getElementById("candleChart").onclick=function(evt){
-
-const points=candleChart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true)
-
-if(points.length){
-
-const latest=newsCache[0]
-
-if(!latest)return
-
-document.getElementById("priceEvents").innerHTML=`
-<div class="bg-slate-700 p-3 rounded">
-<b>Possible Catalyst</b><br>
-${latest.headline}
-<br><a href="${latest.url}" target="_blank" class="text-blue-400">Read Article</a>
-</div>
-`
-
-}
-
-}
 
 /* ADD STOCK */
 
@@ -228,14 +224,22 @@ l:d.l,
 c:d.c
 }))
 
+const events=findTurningPoints(data.history)
+
+candleChart.data.datasets[1].data=events.map(e=>({
+x:new Date(e.date),
+y:e.price
+}))
+
 candleChart.update()
 
-const events=findTurningPoints(data.history)
 showEvents(events)
 
 }
 
 }
+
+/* CALCULATIONS */
 
 const profit=total-totalPrevious
 const percent=totalPrevious?(profit/totalPrevious)*100:0
@@ -245,32 +249,37 @@ const riskScore=Math.min(100,Math.round(volatility*5))
 portfolioHistory.push(total)
 if(portfolioHistory.length>30)portfolioHistory.shift()
 
+/* UPDATE UI */
+
 document.getElementById("totalValue").innerText="£"+total.toFixed(2)
-document.getElementById("profitValue").innerText=(profit>=0?"+":"")+"£"+profit.toFixed(2)+" ("+percent.toFixed(2)+"%)"
+
+document.getElementById("profitValue").innerText=
+(profit>=0?"+":"")+"£"+profit.toFixed(2)+" ("+percent.toFixed(2)+"%)"
+
 document.getElementById("volatilityValue").innerText=volatility.toFixed(2)+"%"
 document.getElementById("riskScore").innerText=riskScore
 document.getElementById("positionCount").innerText=portfolio.length
 document.getElementById("lastUpdated").innerText=new Date().toLocaleTimeString()
 
 updateCharts(total,volatility)
-generateInsights(total,profit,percent,volatility)
+generateInsights(percent,volatility)
 generateMarketDrivers()
 
 }
 
 /* CHART UPDATES */
 
-function updateCharts(total,volatility){
+function updateCharts(total,vol){
 
 performanceChart.data.labels=portfolioHistory.map((_,i)=>i)
 performanceChart.data.datasets[0].data=portfolioHistory
 performanceChart.update()
 
-pieChartInstance.data.labels=portfolio.map(p=>company(p.symbol))
-pieChartInstance.data.datasets[0].data=portfolio.map(p=>p.shares*p.currentPrice)
-pieChartInstance.update()
+pieChart.data.labels=portfolio.map(p=>company(p.symbol))
+pieChart.data.datasets[0].data=portfolio.map(p=>p.shares*p.currentPrice)
+pieChart.update()
 
-runMonteCarlo(total,volatility)
+runMonteCarlo(total,vol)
 
 }
 
@@ -293,13 +302,77 @@ prices.push(prices[d-1]*(1+shock))
 
 }
 
-datasets.push({data:prices,borderColor:"rgba(59,130,246,.15)",borderWidth:1,tension:.3})
+datasets.push({
+data:prices,
+borderColor:"rgba(59,130,246,.15)",
+borderWidth:1,
+tension:.3
+})
 
 }
 
 monteChart.data.labels=Array.from({length:days+1},(_,i)=>i)
 monteChart.data.datasets=datasets
 monteChart.update()
+
+}
+
+/* PEAK DETECTION */
+
+function findTurningPoints(history){
+
+const events=[]
+
+for(let i=2;i<history.length-2;i++){
+
+const prev=history[i-1].c
+const curr=history[i].c
+const next=history[i+1].c
+
+if(curr>prev&&curr>next)
+events.push({type:"peak",price:curr,date:history[i].t})
+
+if(curr<prev&&curr<next)
+events.push({type:"low",price:curr,date:history[i].t})
+
+}
+
+return events
+
+}
+
+function showEvents(events){
+
+const container=document.getElementById("priceEvents")
+container.innerHTML=""
+
+events.slice(-5).forEach(e=>{
+
+container.innerHTML+=`
+<div class="bg-slate-700 p-2 rounded mb-2">
+${e.type==="peak"?"Price Peak":"Price Low"} detected on ${new Date(e.date).toLocaleDateString()}
+</div>
+`
+
+})
+
+}
+
+/* AI INSIGHTS */
+
+function generateInsights(percent,volatility){
+
+const container=document.getElementById("aiInsights")
+container.innerHTML=""
+
+if(volatility>5)
+container.innerHTML+=`<div class="bg-red-500/20 p-2 rounded mb-2">High volatility detected</div>`
+
+if(percent>5)
+container.innerHTML+=`<div class="bg-green-500/20 p-2 rounded mb-2">Strong gains detected</div>`
+
+if(percent<-5)
+container.innerHTML+=`<div class="bg-yellow-500/20 p-2 rounded mb-2">Drawdown detected</div>`
 
 }
 
@@ -316,83 +389,13 @@ if(!stock.previousClose||!stock.currentPrice)return
 
 const move=((stock.currentPrice-stock.previousClose)/stock.previousClose)*100
 
-let reason="Minor market fluctuation."
-
-if(move>3)reason="Strong upward momentum detected."
-else if(move>1)reason="Moderate upward movement."
-else if(move<-3)reason="Sharp decline detected."
-else if(move<-1)reason="Moderate downward pressure."
-
 container.innerHTML+=`
 <div class="bg-slate-700 p-2 rounded mb-2">
-<b>${company(stock.symbol)}</b> ${move>=0?"↑":"↓"} ${move.toFixed(2)}% — ${reason}
+<b>${company(stock.symbol)}</b> ${move>=0?"↑":"↓"} ${move.toFixed(2)}%
 </div>
 `
 
 })
-
-}
-
-/* TURNING POINTS */
-
-function findTurningPoints(history){
-
-const events=[]
-
-for(let i=2;i<history.length-2;i++){
-
-const prev=history[i-1].c
-const curr=history[i].c
-const next=history[i+1].c
-
-if(curr>prev&&curr>next){
-events.push({type:"peak",price:curr,date:history[i].t})
-}
-
-if(curr<prev&&curr<next){
-events.push({type:"low",price:curr,date:history[i].t})
-}
-
-}
-
-return events
-
-}
-
-function showEvents(events){
-
-const container=document.getElementById("priceEvents")
-container.innerHTML=""
-
-events.slice(-5).forEach(e=>{
-
-let text=e.type==="peak"
-?"Sharp peak detected – strong buying momentum."
-:"Price trough detected – market correction."
-
-container.innerHTML+=`
-<div class="bg-slate-700 p-2 rounded mb-2">
-${e.date} — ${text}
-</div>
-`
-
-})
-
-}
-
-/* AI INSIGHTS */
-
-function generateInsights(total,profit,percent,volatility){
-
-const container=document.getElementById("aiInsights")
-container.innerHTML=""
-
-if(volatility>5)container.innerHTML+=`<div class="bg-red-500/20 p-2 rounded">High volatility detected</div>`
-if(percent>5)container.innerHTML+=`<div class="bg-green-500/20 p-2 rounded">Strong gains detected</div>`
-if(percent<-5)container.innerHTML+=`<div class="bg-yellow-500/20 p-2 rounded">Drawdown exceeding 5%</div>`
-
-if(portfolio.length===1)
-container.innerHTML+=`<div class="bg-blue-500/20 p-2 rounded">Portfolio concentration risk</div>`
 
 }
 
@@ -411,7 +414,7 @@ container.innerHTML=""
 news.forEach(item=>{
 
 container.innerHTML+=`
-<div class="bg-slate-700 p-2 rounded hover:bg-slate-600">
+<div class="bg-slate-700 p-2 rounded mb-2">
 <a href="${item.url}" target="_blank">${item.headline}</a>
 </div>
 `
