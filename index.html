@@ -87,7 +87,10 @@ body {
   <h3 class="mb-4 font-semibold">Market News</h3>
   <div id="newsContainer" class="space-y-2 text-sm"></div>
 </div>
-
+<div class="card-glow p-6 rounded mb-6">
+  <h3 class="mb-4 font-semibold">Market Drivers</h3>
+  <div id="marketDrivers" class="space-y-2 text-sm"></div>
+</div>
 <!-- ALLOCATION -->
 <div class="card-glow p-6 rounded">
   <h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
@@ -168,6 +171,7 @@ async function refreshPortfolio() {
 
   updateCharts(total, volatility);
   generateInsights(total, profit, percent, volatility);
+  generateMarketDrivers();
 }
 
 function updateCharts(total, volatility) {
@@ -208,7 +212,49 @@ function runMonteCarlo(currentValue, volatilityPercent) {
   monteChart.data.datasets = datasets;
   monteChart.update();
 }
+function generateMarketDrivers() {
 
+  const container = document.getElementById("marketDrivers");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  portfolio.forEach(stock => {
+
+    if (!stock.previousClose || !stock.currentPrice) return;
+
+    const move =
+      ((stock.currentPrice - stock.previousClose) /
+        stock.previousClose) * 100;
+
+    let reason = "";
+
+    if (move > 3)
+      reason = "Strong upward momentum detected. Possible earnings or positive news catalyst.";
+
+    else if (move > 1)
+      reason = "Moderate upward movement. Market sentiment positive.";
+
+    else if (move < -3)
+      reason = "Sharp decline. Possible negative news or sector weakness.";
+
+    else if (move < -1)
+      reason = "Moderate downward pressure.";
+
+    else
+      reason = "Minor market fluctuation.";
+
+    container.innerHTML += `
+      <div class="bg-slate-700 p-2 rounded">
+        <b>${stock.symbol}</b>
+        ${move >= 0 ? "↑" : "↓"}
+        ${move.toFixed(2)}%
+        — ${reason}
+      </div>
+    `;
+  });
+
+}
 function generateInsights(total, profit, percent, volatility) {
   const container = document.getElementById("aiInsights");
   container.innerHTML = "";
