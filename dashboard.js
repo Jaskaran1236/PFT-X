@@ -98,3 +98,27 @@ table.appendChild(tr)
 
 createHeatmap()
 loadHedgeFunds()
+async function updateTickerBar(){
+
+const tickers = ["AAPL","MSFT","NVDA","TSLA","GOOGL","META"]
+
+const container = document.getElementById("tickerBar")
+
+container.innerHTML = ""
+
+for(const ticker of tickers){
+
+const price = await fetchPrice(ticker)
+
+const el = document.createElement("div")
+
+el.innerHTML = `
+<span class="text-gray-400">${ticker}</span>
+<span class="ml-1">£${price?.toFixed(2) || "--"}</span>
+`
+
+container.appendChild(el)
+
+}
+
+}
