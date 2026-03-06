@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PFT-X</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
+
 <style>
-body {
-  background: radial-gradient(circle at top left, #0b1220, #0f172a);
+body{
+background: radial-gradient(circle at top left,#0b1220,#0f172a);
 }
-.card-glow {
-  background: rgba(30, 41, 59, 0.85);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 25px rgba(59,130,246,0.15);
+.card-glow{
+background: rgba(30,41,59,.85);
+backdrop-filter: blur(6px);
+box-shadow:0 0 25px rgba(59,130,246,.15);
 }
 </style>
 </head>
@@ -24,380 +25,406 @@ body {
 
 <h1 class="text-3xl font-bold mb-6">PFT-X</h1>
 
-<!-- INPUT -->
 <div class="flex space-x-2 mb-6">
-  <input id="portfolioSymbol" placeholder="Symbol (e.g. NVDA)" class="px-3 py-2 rounded text-black">
-  <input id="portfolioShares" type="number" placeholder="Shares" class="px-3 py-2 rounded text-black w-24">
-  <button onclick="addToPortfolio()" class="bg-green-600 px-4 py-2 rounded">Add</button>
+<input id="portfolioSymbol" placeholder="Symbol (e.g NVDA)" class="px-3 py-2 rounded text-black">
+<input id="portfolioShares" type="number" placeholder="Shares" class="px-3 py-2 rounded text-black w-24">
+<button onclick="addToPortfolio()" class="bg-green-600 px-4 py-2 rounded">Add</button>
 </div>
 
-<!-- CARDS -->
 <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
-  <div class="card-glow p-6 rounded">
-    <p>Total Portfolio Value</p>
-    <h2 id="totalValue" class="text-3xl font-bold">£0.00</h2>
-  </div>
 
-  <div class="card-glow p-6 rounded">
-    <p>Profit / Loss</p>
-    <h2 id="profitValue" class="text-3xl font-bold">£0.00</h2>
-  </div>
-
-  <div class="card-glow p-6 rounded">
-    <p>Risk Score</p>
-    <h2 id="riskScore" class="text-3xl font-bold">0</h2>
-  </div>
-
-  <div class="card-glow p-6 rounded">
-    <p>Volatility %</p>
-    <h2 id="volatilityValue" class="text-3xl font-bold">0%</h2>
-  </div>
-
-  <div class="card-glow p-6 rounded">
-    <p>Total Positions</p>
-    <h2 id="positionCount" class="text-3xl font-bold">0</h2>
-  </div>
-
-  <div class="card-glow p-6 rounded">
-    <p>Last Updated</p>
-    <h2 id="lastUpdated" class="text-xl font-bold">-</h2>
-  </div>
+<div class="card-glow p-6 rounded">
+<p>Total Portfolio Value</p>
+<h2 id="totalValue" class="text-3xl font-bold">£0.00</h2>
 </div>
+
+<div class="card-glow p-6 rounded">
+<p>Profit / Loss</p>
+<h2 id="profitValue" class="text-3xl font-bold">£0.00</h2>
+</div>
+
+<div class="card-glow p-6 rounded">
+<p>Risk Score</p>
+<h2 id="riskScore" class="text-3xl font-bold">0</h2>
+</div>
+
+<div class="card-glow p-6 rounded">
+<p>Volatility %</p>
+<h2 id="volatilityValue" class="text-3xl font-bold">0%</h2>
+</div>
+
+<div class="card-glow p-6 rounded">
+<p>Total Positions</p>
+<h2 id="positionCount" class="text-3xl font-bold">0</h2>
+</div>
+
+<div class="card-glow p-6 rounded">
+<p>Last Updated</p>
+<h2 id="lastUpdated" class="text-xl font-bold">-</h2>
+</div>
+
+</div>
+
 <div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-2 font-semibold">3 Year Price History</h3>
 <canvas id="candleChart" height="120"></canvas>
 </div>
-<!-- PERFORMANCE CHART -->
+
 <div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-2 font-semibold">Portfolio Performance</h3>
-  <canvas id="performanceChart" height="100"></canvas>
+<h3 class="mb-2 font-semibold">Portfolio Performance</h3>
+<canvas id="performanceChart" height="100"></canvas>
 </div>
 
-<!-- MONTE CARLO -->
 <div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-2 font-semibold">Monte Carlo Simulation (30 Days)</h3>
-  <canvas id="monteChart" height="120"></canvas>
+<h3 class="mb-2 font-semibold">Monte Carlo Simulation</h3>
+<canvas id="monteChart"></canvas>
 </div>
 
-<!-- AI INSIGHTS -->
 <div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4 font-semibold">AI Insights</h3>
-  <div id="aiInsights" class="space-y-2 text-sm"></div>
+<h3 class="mb-4 font-semibold">AI Insights</h3>
+<div id="aiInsights" class="space-y-2 text-sm"></div>
 </div>
 
-<!-- NEWS -->
 <div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4 font-semibold">Market News</h3>
-  <div id="newsContainer" class="space-y-2 text-sm"></div>
+<h3 class="mb-4 font-semibold">Market News</h3>
+<div id="newsContainer" class="space-y-2 text-sm"></div>
 </div>
+
 <div class="card-glow p-6 rounded mb-6">
-  <h3 class="mb-4 font-semibold">Market Drivers</h3>
-  <div id="marketDrivers" class="space-y-2 text-sm"></div>
+<h3 class="mb-4 font-semibold">Market Drivers</h3>
+<div id="marketDrivers"></div>
 </div>
-  <div class="card-glow p-6 rounded mb-6">
+
+<div class="card-glow p-6 rounded mb-6">
 <h3 class="mb-4 font-semibold">Price Event Explanations</h3>
 <div id="priceEvents"></div>
 </div>
-<!-- ALLOCATION -->
+
 <div class="card-glow p-6 rounded">
-  <h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
-  <canvas id="pieChart"></canvas>
+<h3 class="mb-4 font-semibold">Portfolio Allocation</h3>
+<canvas id="pieChart"></canvas>
 </div>
 
 <script>
 
-let portfolio = [];
-let portfolioHistory = [];
+let portfolio=[]
+let portfolioHistory=[]
+let newsCache=[]
 
-let pieChartInstance = new Chart(document.getElementById('pieChart'), {
-  type: 'doughnut',
-  data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }
-});
+/* COMPANY NAME MAP */
 
-let performanceChart = new Chart(document.getElementById('performanceChart'), {
-  type: 'line',
-  data: { labels: [], datasets: [{ data: [], borderColor: "#3b82f6", tension: 0.4 }] },
-  options: { plugins: { legend: { display: false } } }
-});
-
-let monteChart = new Chart(document.getElementById('monteChart'), {
-  type: 'line',
-  data: { labels: [], datasets: [] },
-  options: { plugins: { legend: { display: false } } }
-});
-let candleChart = new Chart(
-  document.getElementById("candleChart"),
-  {
-    type: "candlestick",
-    data: {
-      datasets: [{
-        label: "Price",
-        data: []
-      }]
-    }
-  }
-);
-async function addToPortfolio() {
-  const symbol = document.getElementById("portfolioSymbol").value.toUpperCase();
-  const shares = Number(document.getElementById("portfolioShares").value);
-
-  if (!symbol || !shares) return;
-
-  portfolio.push({ symbol, shares });
-
-  document.getElementById("portfolioSymbol").value = "";
-  document.getElementById("portfolioShares").value = "";
-
-  await refreshPortfolio();
+const companyNames={
+NVDA:"NVIDIA",
+AAPL:"Apple",
+MSFT:"Microsoft",
+AMZN:"Amazon",
+GOOGL:"Alphabet",
+META:"Meta",
+TSLA:"Tesla",
+AMD:"AMD",
+NFLX:"Netflix",
+PLTR:"Palantir"
 }
 
-async function refreshPortfolio() {
-  let total = 0;
-  let totalPrevious = 0;
-
-  for (let item of portfolio) {
-    const response = await fetch(`/api/stock?symbol=${item.symbol}`);
-    const data = await response.json();
-
-    if (data.current) {
-      item.currentPrice = data.current;
-      item.previousClose = data.previousClose;
-
-      total += item.shares * item.currentPrice;
-      totalPrevious += item.shares * item.previousClose;
-  }
-if (data.history) {
-
-  candleChart.data.datasets[0].data =
-    data.history.map(d => ({
-      x: new Date(d.t),
-      o: d.o,
-      h: d.h,
-      l: d.l,
-      c: d.c
-    }));
-
-  candleChart.update();
-const events= findTurningPoints(data.history);
-  showEvents(events)
-  
-}
-  const profit = total - totalPrevious;
-  const percent = totalPrevious ? (profit / totalPrevious) * 100 : 0;
-  const volatility = Math.abs(percent);
-  const riskScore = Math.min(100, Math.round(volatility * 5));
-
-  portfolioHistory.push(total);
-  if (portfolioHistory.length > 30) portfolioHistory.shift();
-
-  document.getElementById("totalValue").innerText = "£" + total.toFixed(2);
-  document.getElementById("profitValue").innerText =
-    (profit >= 0 ? "+" : "") + "£" + profit.toFixed(2) + " (" + percent.toFixed(2) + "%)";
-  document.getElementById("profitValue").className =
-    profit >= 0 ? "text-green-400 text-3xl font-bold" : "text-red-400 text-3xl font-bold";
-
-  document.getElementById("volatilityValue").innerText = volatility.toFixed(2) + "%";
-  document.getElementById("riskScore").innerText = riskScore;
-  document.getElementById("positionCount").innerText = portfolio.length;
-  document.getElementById("lastUpdated").innerText = new Date().toLocaleTimeString();
-
-  updateCharts(total, volatility);
-  generateInsights(total, profit, percent, volatility);
-  generateMarketDrivers();
+function company(symbol){
+return companyNames[symbol]||symbol
 }
 
-function updateCharts(total, volatility) {
+/* CHARTS */
 
-  performanceChart.data.labels = portfolioHistory.map((_, i) => i);
-  performanceChart.data.datasets[0].data = portfolioHistory;
-  performanceChart.update();
+const pieChartInstance=new Chart(document.getElementById("pieChart"),{
+type:"doughnut",
+data:{labels:[],datasets:[{data:[],backgroundColor:["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6"]}]}
+})
 
-  pieChartInstance.data.labels = portfolio.map(p => p.symbol);
-  pieChartInstance.data.datasets[0].data = portfolio.map(p => p.shares * p.currentPrice);
-  pieChartInstance.update();
+const performanceChart=new Chart(document.getElementById("performanceChart"),{
+type:"line",
+data:{labels:[],datasets:[{data:[],borderColor:"#3b82f6",tension:.4}]},
+options:{plugins:{legend:{display:false}}}
+})
 
-  runMonteCarlo(total, volatility);
+const monteChart=new Chart(document.getElementById("monteChart"),{
+type:"line",
+data:{labels:[],datasets:[]},
+options:{plugins:{legend:{display:false}}}
+})
+
+const candleChart=new Chart(document.getElementById("candleChart"),{
+type:"candlestick",
+data:{datasets:[{label:"Price",data:[]}]}
+})
+
+/* CLICK CANDLE → EXPLAIN WITH NEWS */
+
+document.getElementById("candleChart").onclick=function(evt){
+
+const points=candleChart.getElementsAtEventForMode(evt,'nearest',{intersect:true},true)
+
+if(points.length){
+
+const latest=newsCache[0]
+
+if(!latest)return
+
+document.getElementById("priceEvents").innerHTML=`
+<div class="bg-slate-700 p-3 rounded">
+<b>Possible Catalyst</b><br>
+${latest.headline}
+<br><a href="${latest.url}" target="_blank" class="text-blue-400">Read Article</a>
+</div>
+`
+
 }
 
-function runMonteCarlo(currentValue, volatilityPercent) {
-  const days = 30;
-  const simulations = 30;
-  const datasets = [];
-
-  for (let s = 0; s < simulations; s++) {
-    let prices = [currentValue];
-
-    for (let d = 1; d <= days; d++) {
-      const shock = (Math.random() - 0.5) * 2 * (volatilityPercent / 100);
-      prices.push(prices[d - 1] * (1 + shock));
-    }
-
-    datasets.push({
-      data: prices,
-      borderColor: "rgba(59,130,246,0.15)",
-      borderWidth: 1,
-      tension: 0.3
-    });
-  }
-
-  monteChart.data.labels = Array.from({ length: days + 1 }, (_, i) => i);
-  monteChart.data.datasets = datasets;
-  monteChart.update();
 }
-function generateMarketDrivers() {
 
-  const container = document.getElementById("marketDrivers");
-  if (!container) return;
+/* ADD STOCK */
 
-  container.innerHTML = "";
+async function addToPortfolio(){
 
-  portfolio.forEach(stock => {
+const symbol=document.getElementById("portfolioSymbol").value.toUpperCase()
+const shares=Number(document.getElementById("portfolioShares").value)
 
-    if (!stock.previousClose || !stock.currentPrice) return;
+if(!symbol||!shares)return
 
-    const move =
-      ((stock.currentPrice - stock.previousClose) /
-        stock.previousClose) * 100;
+portfolio.push({symbol,shares})
 
-    let reason = "";
+document.getElementById("portfolioSymbol").value=""
+document.getElementById("portfolioShares").value=""
 
-    if (move > 3)
-      reason = "Strong upward momentum detected. Possible earnings or positive news catalyst.";
+await refreshPortfolio()
 
-    else if (move > 1)
-      reason = "Moderate upward movement. Market sentiment positive.";
+}
 
-    else if (move < -3)
-      reason = "Sharp decline. Possible negative news or sector weakness.";
+/* REFRESH */
 
-    else if (move < -1)
-      reason = "Moderate downward pressure.";
+async function refreshPortfolio(){
 
-    else
-      reason = "Minor market fluctuation.";
+let total=0
+let totalPrevious=0
 
-    container.innerHTML += `
-      <div class="bg-slate-700 p-2 rounded">
-        <b>${stock.symbol}</b>
-        ${move >= 0 ? "↑" : "↓"}
-        ${move.toFixed(2)}%
-        — ${reason}
-      </div>
-    `;
-  });
+for(let item of portfolio){
+
+const res=await fetch(`/api/stock?symbol=${item.symbol}`)
+const data=await res.json()
+
+if(data.current){
+
+item.currentPrice=data.current
+item.previousClose=data.previousClose
+
+total+=item.shares*item.currentPrice
+totalPrevious+=item.shares*item.previousClose
+
+}
+
+if(data.history){
+
+candleChart.data.datasets[0].data=data.history.map(d=>({
+x:new Date(d.t),
+o:d.o,
+h:d.h,
+l:d.l,
+c:d.c
+}))
+
+candleChart.update()
+
+const events=findTurningPoints(data.history)
+showEvents(events)
+
+}
+
+}
+
+const profit=total-totalPrevious
+const percent=totalPrevious?(profit/totalPrevious)*100:0
+const volatility=Math.abs(percent)
+const riskScore=Math.min(100,Math.round(volatility*5))
+
+portfolioHistory.push(total)
+if(portfolioHistory.length>30)portfolioHistory.shift()
+
+document.getElementById("totalValue").innerText="£"+total.toFixed(2)
+document.getElementById("profitValue").innerText=(profit>=0?"+":"")+"£"+profit.toFixed(2)+" ("+percent.toFixed(2)+"%)"
+document.getElementById("volatilityValue").innerText=volatility.toFixed(2)+"%"
+document.getElementById("riskScore").innerText=riskScore
+document.getElementById("positionCount").innerText=portfolio.length
+document.getElementById("lastUpdated").innerText=new Date().toLocaleTimeString()
+
+updateCharts(total,volatility)
+generateInsights(total,profit,percent,volatility)
+generateMarketDrivers()
+
+}
+
+/* CHART UPDATES */
+
+function updateCharts(total,volatility){
+
+performanceChart.data.labels=portfolioHistory.map((_,i)=>i)
+performanceChart.data.datasets[0].data=portfolioHistory
+performanceChart.update()
+
+pieChartInstance.data.labels=portfolio.map(p=>company(p.symbol))
+pieChartInstance.data.datasets[0].data=portfolio.map(p=>p.shares*p.currentPrice)
+pieChartInstance.update()
+
+runMonteCarlo(total,volatility)
+
+}
+
+/* MONTE CARLO */
+
+function runMonteCarlo(value,vol){
+
+const days=30
+const sims=30
+const datasets=[]
+
+for(let s=0;s<sims;s++){
+
+let prices=[value]
+
+for(let d=1;d<=days;d++){
+
+const shock=(Math.random()-.5)*2*(vol/100)
+prices.push(prices[d-1]*(1+shock))
+
+}
+
+datasets.push({data:prices,borderColor:"rgba(59,130,246,.15)",borderWidth:1,tension:.3})
+
+}
+
+monteChart.data.labels=Array.from({length:days+1},(_,i)=>i)
+monteChart.data.datasets=datasets
+monteChart.update()
+
+}
+
+/* MARKET DRIVERS */
+
+function generateMarketDrivers(){
+
+const container=document.getElementById("marketDrivers")
+container.innerHTML=""
+
+portfolio.forEach(stock=>{
+
+if(!stock.previousClose||!stock.currentPrice)return
+
+const move=((stock.currentPrice-stock.previousClose)/stock.previousClose)*100
+
+let reason="Minor market fluctuation."
+
+if(move>3)reason="Strong upward momentum detected."
+else if(move>1)reason="Moderate upward movement."
+else if(move<-3)reason="Sharp decline detected."
+else if(move<-1)reason="Moderate downward pressure."
+
+container.innerHTML+=`
+<div class="bg-slate-700 p-2 rounded mb-2">
+<b>${company(stock.symbol)}</b> ${move>=0?"↑":"↓"} ${move.toFixed(2)}% — ${reason}
+</div>
+`
+
+})
+
+}
+
+/* TURNING POINTS */
+
 function findTurningPoints(history){
 
-  const events = [];
+const events=[]
 
-  for(let i=2;i<history.length-2;i++){
+for(let i=2;i<history.length-2;i++){
 
-    const prev = history[i-1].c;
-    const curr = history[i].c;
-    const next = history[i+1].c;
+const prev=history[i-1].c
+const curr=history[i].c
+const next=history[i+1].c
 
-    if(curr > prev && curr > next){
-      events.push({
-        type:"peak",
-        price:curr,
-        date:history[i].t
-      });
-    }
-
-    if(curr < prev && curr < next){
-      events.push({
-        type:"low",
-        price:curr,
-        date:history[i].t
-      });
-    }
-
-  }
-
-  return events;
-}
-  function showEvents(events){
-
- const container = document.getElementById("priceEvents");
- container.innerHTML="";
-
- events.slice(-5).forEach(e => {
-
-   let text = "";
-
-   if(e.type==="peak")
-      text = "Sharp peak detected – likely strong buying momentum.";
-
-   if(e.type==="low")
-      text = "Price trough detected – likely market correction.";
-
-   container.innerHTML += `
-   <div class="bg-slate-700 p-2 rounded mb-2">
-   ${e.date} — ${text}
-   </div>
-   `;
-
- });
-
-}
-}
-function generateInsights(total, profit, percent, volatility) {
-  const container = document.getElementById("aiInsights");
-  container.innerHTML = "";
-
-  if (volatility > 5)
-    container.innerHTML += `<div class="bg-red-500/20 p-2 rounded">High volatility detected.</div>`;
-
-  if (percent > 5)
-    container.innerHTML += `<div class="bg-green-500/20 p-2 rounded">Strong gains detected.</div>`;
-
-  if (percent < -5)
-    container.innerHTML += `<div class="bg-yellow-500/20 p-2 rounded">Drawdown exceeding 5%.</div>`;
-
-  if (portfolio.length === 1)
-    container.innerHTML += `<div class="bg-blue-500/20 p-2 rounded">Portfolio concentration risk.</div>`;
+if(curr>prev&&curr>next){
+events.push({type:"peak",price:curr,date:history[i].t})
 }
 
-async function loadNews() {
-  const res = await fetch("/api/news");
-  const news = await res.json();
-  const container = document.getElementById("newsContainer");
-  container.innerHTML = "";
-
-  news.forEach(item => {
-    container.innerHTML += `
-      <div class="bg-slate-700 p-2 rounded hover:bg-slate-600 transition">
-        <a href="${item.url}" target="_blank">${item.headline}</a>
-      </div>`;
-  });
+if(curr<prev&&curr<next){
+events.push({type:"low",price:curr,date:history[i].t})
 }
 
-loadNews();
-refreshPortfolio();
-setInterval(refreshPortfolio, 15000);
+}
+
+return events
+
+}
+
+function showEvents(events){
+
+const container=document.getElementById("priceEvents")
+container.innerHTML=""
+
+events.slice(-5).forEach(e=>{
+
+let text=e.type==="peak"
+?"Sharp peak detected – strong buying momentum."
+:"Price trough detected – market correction."
+
+container.innerHTML+=`
+<div class="bg-slate-700 p-2 rounded mb-2">
+${e.date} — ${text}
+</div>
+`
+
+})
+
+}
+
+/* AI INSIGHTS */
+
+function generateInsights(total,profit,percent,volatility){
+
+const container=document.getElementById("aiInsights")
+container.innerHTML=""
+
+if(volatility>5)container.innerHTML+=`<div class="bg-red-500/20 p-2 rounded">High volatility detected</div>`
+if(percent>5)container.innerHTML+=`<div class="bg-green-500/20 p-2 rounded">Strong gains detected</div>`
+if(percent<-5)container.innerHTML+=`<div class="bg-yellow-500/20 p-2 rounded">Drawdown exceeding 5%</div>`
+
+if(portfolio.length===1)
+container.innerHTML+=`<div class="bg-blue-500/20 p-2 rounded">Portfolio concentration risk</div>`
+
+}
+
+/* NEWS */
+
+async function loadNews(){
+
+const res=await fetch("/api/news")
+const news=await res.json()
+
+newsCache=news
+
+const container=document.getElementById("newsContainer")
+container.innerHTML=""
+
+news.forEach(item=>{
+
+container.innerHTML+=`
+<div class="bg-slate-700 p-2 rounded hover:bg-slate-600">
+<a href="${item.url}" target="_blank">${item.headline}</a>
+</div>
+`
+
+})
+
+}
+
+loadNews()
+refreshPortfolio()
+setInterval(refreshPortfolio,15000)
 
 </script>
+
 </body>
-  <!-- TEAM SECTION -->
-<div class="card-glow p-6 rounded mt-8">
-  <h3 class="mb-6 font-semibold text-lg">Team</h3>
-
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-    
-    <div class="bg-slate-800/60 p-4 rounded">
-      <h4 class="font-semibold text-white">Jaskaran Singh Daudher</h4>
-      <p class="text-gray-400 mt-1">Founder & Lead Developer</p>
-    </div>
-
-    <div class="bg-slate-800/60 p-4 rounded">
-      <h4 class="font-semibold text-white">Rohan Khosla</h4>
-      <p class="text-gray-400 mt-1">Co-Founder & finanical Lead</p>
-    </div>
-
-    <div class="bg-slate-800/60 p-4 rounded">
-      <h4 class="font-semibold text-white">Callum Appleby</h4>
-      <p class="text-gray-400 mt-1">Research Analyst and UI structuring</p>
-    </div>
-
-  </div>
-</div>
 </html>
