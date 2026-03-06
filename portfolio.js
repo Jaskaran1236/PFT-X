@@ -68,5 +68,10 @@ calculateAIScore(prices)
 drawAllocationChart(portfolio)
 
 runMonteCarlo(totalValue)
+const now = new Date().toLocaleTimeString()
 
+document.getElementById("lastUpdated").innerText =
+`Last updated: ${now}`
+setInterval(updateDashboard,10000)
+}
 }
