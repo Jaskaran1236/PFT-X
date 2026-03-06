@@ -1,79 +1,96 @@
-async function getStock(symbol){
 
-try{
+function calculateAIScore(prices){
 
-const res=await fetch(`/api/stock?symbol=${symbol}`)
-const data=await res.json()
+let score = 50
 
-return data
+Object.values(prices).forEach(price =>{
 
-}catch{
+if(price > 100) score += 5
+else score -= 3
 
-return null
+})
 
-}
-
-}
-
-async function refreshPortfolio(){
-
-let total=0
-let prev=0
-
-for(const stock of portfolio){
-
-const data=await getStock(stock.symbol)
-
-if(!data||!data.current)continue
-
-stock.current=data.current
-stock.prev=data.previousClose||data.current
-
-total+=stock.current*stock.shares
-prev+=stock.prev*stock.shares
+document.getElementById("aiScore").innerText = score
 
 }
 
-const profit=total-prev
 
-document.getElementById("totalValue").innerText="£"+total.toFixed(2)
-document.getElementById("profitValue").innerText="£"+profit.toFixed(2)
-document.getElementById("positionCount").innerText=portfolio.length
-document.getElementById("lastUpdated").innerText=new Date().toLocaleTimeString()
+function createHeatmap(){
 
-history.push(total)
-if(history.length>30)history.shift()
+const stocks = [
+"AAPL","MSFT","NVDA","TSLA",
+"GOOGL","AMZN","META",
+"RR.L","RIO","BP"
+]
 
-performanceChart.data.labels=history.map((_,i)=>i)
-performanceChart.data.datasets[0].data=history
-performanceChart.update()
+const container = document.getElementById("heatmap")
 
-pieChart.data.labels=portfolio.map(s=>s.symbol)
-pieChart.data.datasets[0].data=portfolio.map(s=>s.current*s.shares)
-pieChart.update()
+stocks.forEach(stock=>{
 
-}
+const change = Math.random()*6 - 3
 
-async function loadNews(){
+const box = document.createElement("div")
 
-const res=await fetch("/api/news")
-const news=await res.json()
+box.className="p-3 text-center rounded"
 
-const container=document.getElementById("newsContainer")
+box.style.background =
+change>0 ? "#14532d" : "#7f1d1d"
 
-container.innerHTML=""
-
-news.slice(0,6).forEach(n=>{
-
-container.innerHTML+=`
-<div class="bg-slate-700 p-2 rounded mb-2">
-<a href="${n.url}" target="_blank">${n.headline}</a>
-</div>
+box.innerHTML=`
+${stock}
+<br>
+${change.toFixed(2)}%
 `
+
+container.appendChild(box)
 
 })
 
 }
 
-loadNews()
-setInterval(refreshPortfolio,15000)
+
+function loadHedgeFunds(){
+
+const data=[
+
+{
+fund:"Berkshire Hathaway",
+stock:"AAPL",
+position:"$170B"
+},
+
+{
+fund:"Bridgewater",
+stock:"SPY",
+position:"$4B"
+},
+
+{
+fund:"Renaissance",
+stock:"NVDA",
+position:"$2B"
+}
+
+]
+
+const table = document.getElementById("hedgeTable")
+
+data.forEach(row=>{
+
+const tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td>${row.fund}</td>
+<td>${row.stock}</td>
+<td>${row.position}</td>
+`
+
+table.appendChild(tr)
+
+})
+
+}
+
+
+createHeatmap()
+loadHedgeFunds()
