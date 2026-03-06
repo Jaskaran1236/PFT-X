@@ -25,19 +25,19 @@ async function fetchPrice(ticker){
 
 try{
 
-const res = await fetch(`/api/stock?ticker=${ticker}`)
-const data = await res.json()
+const res = await fetch(`/api/stock?ticker=${ticker}`);
+const data = await res.json();
 
-return data.price || 0
+return data.price;
 
-}catch{
+}catch(err){
 
-return 0
+console.error("Price fetch error",err);
+return null;
 
 }
 
 }
-
 async function updateDashboard(){
 
 let totalValue = 0
