@@ -14,16 +14,24 @@ const response = await fetch(
 
 const data = await response.json();
 
-const price = data.quoteResponse.result[0].regularMarketPrice;
+const result = data.quoteResponse.result;
+
+if(!result || result.length === 0){
+return res.status(404).json({error:"Ticker not found"});
+}
+
+const price = result[0].regularMarketPrice;
 
 res.status(200).json({
 ticker,
 price
 });
 
-}catch(err){
+}catch(error){
 
-res.status(500).json({error:"Failed to fetch price"});
+console.error(error);
+
+res.status(500).json({error:"Price fetch failed"});
 
 }
 
