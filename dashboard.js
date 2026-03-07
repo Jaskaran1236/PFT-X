@@ -102,23 +102,32 @@ async function updateTickerBar(){
 
 const tickers = ["AAPL","MSFT","NVDA","TSLA","GOOGL","META"]
 
-const container = document.getElementById("tickerBar")
+const container = document.getElementById("tickerTrack")
 
-container.innerHTML = ""
+let html = ""
 
 for(const ticker of tickers){
 
 const price = await fetchPrice(ticker)
 
-const el = document.createElement("div")
+const change = (Math.random()*4 - 2).toFixed(2)
 
-el.innerHTML = `
-<span class="text-gray-400">${ticker}</span>
-<span class="ml-1">£${price?.toFixed(2) || "--"}</span>
+let arrow = "▲"
+let color = "text-green-400"
+
+if(change < 0){
+arrow = "▼"
+color = "text-red-400"
+}
+
+html += `
+<span class="mx-6 ${color}">
+${ticker} £${price?.toFixed(2) || "--"} ${arrow}${Math.abs(change)}%
+</span>
 `
 
-container.appendChild(el)
-
 }
+
+container.innerHTML = html + html
 
 }
