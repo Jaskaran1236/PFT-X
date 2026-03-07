@@ -49,8 +49,10 @@ for(const stock of portfolio){
 const price = await fetchPrice(stock.ticker)
 
 prices[stock.ticker] = price
-stock.currentPrice = price
+stock.currentPrice = price || stock.buyPrice
+if(price){
 totalValue += stock.shares * price
+}
 totalCost += stock.shares * stock.buyPrice
 
 }
