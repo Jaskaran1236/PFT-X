@@ -23,6 +23,19 @@ padding:20px;
 border-radius:12px;
 }
 
+/* ticker animation */
+
+.ticker-track{
+display:inline-block;
+white-space:nowrap;
+animation:tickerScroll 40s linear infinite;
+}
+
+@keyframes tickerScroll{
+0%{transform:translateX(0)}
+100%{transform:translateX(-50%)}
+}
+
 </style>
 
 </head>
@@ -30,7 +43,9 @@ border-radius:12px;
 <body class="p-6">
 
 <h1 class="text-3xl font-bold mb-6">PFT-X Financial Terminal</h1>
-<div id="tickerBar" class="flex gap-6 text-sm mb-4 overflow-x-auto"></div>
+<div class="overflow-hidden mb-4">
+  <div id="tickerTrack" class="ticker-track whitespace-nowrap"></div>
+</div>
 <div id="lastUpdated" class="text-xs text-gray-400 absolute top-6 right-6">
 Last updated: --
 </div>
