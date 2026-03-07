@@ -27,7 +27,7 @@ const stocks = [
 
 const container = document.getElementById("heatmap")
 
-container.innerHTML=""
+container.replaceChildren()
 
 stocks.forEach(stock=>{
 
