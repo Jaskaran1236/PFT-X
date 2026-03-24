@@ -1,152 +1,173 @@
 let allocationChart = null;
 let monteChart = null;
 
-function drawAllocationChart(portfolio){
+// ── Portfolio Allocation ──────────────────────────────────────────
+function drawAllocationChart(portfolio) {
+  const ctx = document.getElementById("allocationChart");
+  if (!ctx) return;
 
-const ctx = document.getElementById("allocationChart");
+  // Only include positions where we have a live price
+  const priced = portfolio.filter((s) => s.currentPrice !== null);
 
-if(!ctx) return;
+  if (priced.length === 0) {
+    if (allocationChart) { allocationChart.destroy(); allocationChart = null; }
+    return;
+  }
 
-const labels = portfolio.map(s => s.ticker);
-const values = portfolio.map(s => s.shares * s.buyPrice);
+  const labels = priced.map((s) => s.ticker);
+  // Use current market value for accurate allocation weights
+  const values = priced.map((s) => s.shares * s.currentPrice);
 
-if(allocationChart){
-allocationChart.destroy();
+  const COLORS = [
+    "#f59e0b", "#3b82f6", "#00d964", "#ef4444", "#a855f7",
+    "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#14b8a6",
+  ];
+
+  if (allocationChart) { allocationChart.destroy(); }
+
+  allocationChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: COLORS.slice(0, labels.length),
+        borderColor: "#050a0f",
+        borderWidth: 2,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: "#e2e8f0",
+            font: { family: "'JetBrains Mono',monospace", size: 11 },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = ((ctx.parsed / total) * 100).toFixed(1);
+              return ` ${ctx.label}: £${ctx.parsed.toFixed(2)} (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
-allocationChart = new Chart(ctx,{
-type:'doughnut',
-data:{
-labels:labels,
-datasets:[{
-data:values
-}]
-},
-options:{
-plugins:{
-legend:{
-labels:{
-color:"white"
-}
-}
-}
-}
-});
-
+// ── Box-Muller normal variate ─────────────────────────────────────
+function gaussRandom() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }
 
-function runMonteCarlo(startValue){
-const ctx = document.getElementById("monteChart");
-if(!ctx) return;
+// ── Monte Carlo (Geometric Brownian Motion) ───────────────────────
+function runMonteCarlo(startValue) {
+  const ctx = document.getElementById("monteChart");
+  if (!ctx) return;
 
-const simulations = 100;
-const days = 30;
+  const SIMULATIONS = 200;
+  const DAYS = 30;
+  const DRIFT = 0.0003;   // ~7.5% annual drift
+  const VOL = 0.015;       // ~1.5% daily volatility (realistic equity)
 
-let allPaths = [];
-let avgPath = new Array(days).fill(0);
+  const allPaths = [];
+  const avgPath = new Array(DAYS).fill(0);
 
-for(let s = 0; s < simulations; s++){
+  for (let s = 0; s < SIMULATIONS; s++) {
+    const path = [];
+    let v = startValue > 0 ? startValue : 10000;
 
-let values = [];
-let value = startValue || 1000;
+    for (let d = 0; d < DAYS; d++) {
+      // GBM: S(t+1) = S(t) × exp((μ - σ²/2)dt + σ√dt × Z)
+      const z = gaussRandom();
+      v *= Math.exp((DRIFT - 0.5 * VOL * VOL) + VOL * z);
+      path.push(v);
+      avgPath[d] += v;
+    }
+    allPaths.push(path);
+  }
 
-for(let d = 0; d < days; d++){
+  for (let d = 0; d < DAYS; d++) avgPath[d] /= SIMULATIONS;
 
-value *= 1 + (Math.random()*0.08 - 0.04);
+  // Sort by terminal value to get percentile paths
+  allPaths.sort((a, b) => a[DAYS - 1] - b[DAYS - 1]);
+  const bestPath  = allPaths[Math.floor(SIMULATIONS * 0.95)];
+  const worstPath = allPaths[Math.floor(SIMULATIONS * 0.05)];
 
-values.push(value);
-avgPath[d] += value;
+  if (monteChart) { monteChart.destroy(); }
 
-}
+  const labels = Array.from({ length: DAYS }, (_, i) => `D${i + 1}`);
 
-allPaths.push(values);
-
-}
-
-avgPath = avgPath.map(v => v / simulations);
-
-let bestPath = allPaths[0];
-let worstPath = allPaths[0];
-
-for(const path of allPaths){
-
-if(path[days-1] > bestPath[days-1]) bestPath = path;
-if(path[days-1] < worstPath[days-1]) worstPath = path;
-
-}
-
-if(monteChart){
-monteChart.destroy();
-}
-
-monteChart = new Chart(ctx,{
-type:'line',
-
-data:{
-labels: Array.from({length:days},(_,i)=>`Day ${i+1}`),
-
-datasets:[
-
-{
-label:"Best Case",
-data: bestPath,
-borderColor:"#22c55e",
-borderWidth:3,
-pointRadius:0,
-tension:0.35
-},
-
-{
-label:"Expected",
-data: avgPath,
-borderColor:"#3b82f6",
-borderWidth:3,
-pointRadius:0,
-tension:0.35
-},
-
-{
-label:"Worst Case",
-data: worstPath,
-borderColor:"#ef4444",
-borderWidth:3,
-pointRadius:0,
-tension:0.35
-}
-
-]
-},
-
-options:{
-plugins:{
-legend:{labels:{color:"white"}}
-},
-
-scales:{
-
-x:{
-title:{
-display:true,
-text:"Simulation Period (Days)",
-color:"white"
-},
-ticks:{color:"white"},
-grid:{color:"rgba(255,255,255,0.05)"}
-},
-
-y:{
-title:{
-display:true,
-text:"Portfolio Value (£)",
-color:"white"
-},
-ticks:{color:"white"},
-grid:{color:"rgba(255,255,255,0.05)"}
-}
-
-}
-
-}
-
-});
+  monteChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Best (95th %ile)",
+          data: bestPath,
+          borderColor: "#00d964",
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+        },
+        {
+          label: "Expected",
+          data: avgPath,
+          borderColor: "#3b82f6",
+          borderWidth: 2.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+        },
+        {
+          label: "Worst (5th %ile)",
+          data: worstPath,
+          borderColor: "#ef4444",
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: "#e2e8f0", font: { family: "'JetBrains Mono',monospace", size: 10 } },
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => ` ${ctx.dataset.label}: £${ctx.parsed.y.toFixed(2)}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: "Days", color: "#6b7280" },
+          ticks: { color: "#6b7280", font: { size: 10 } },
+          grid: { color: "rgba(255,255,255,0.03)" },
+        },
+        y: {
+          title: { display: true, text: "Value (£)", color: "#6b7280" },
+          ticks: {
+            color: "#6b7280",
+            font: { size: 10 },
+            callback: (v) => "£" + v.toFixed(0),
+          },
+          grid: { color: "rgba(255,255,255,0.03)" },
+        },
+      },
+    },
+  });
 }
