@@ -1,157 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>PFT-X | Personal Financial Terminal</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
+*{box-sizing:border-box;margin:0;padding:0;}
+
 body{
-background:#0a0f1c;
-color:white;
-font-family:Arial;
+  background:#050a0f;
+  color:#e2e8f0;
+  font-family:'JetBrains Mono','Courier New',monospace;
+  font-size:13px;
+  overflow-x:hidden;
 }
 
-.card{
-background:#111827;
-padding:20px;
-border-radius:12px;
+/* Colours */
+.pos{color:#00d964;}
+.neg{color:#ef4444;}
+.neu{color:#6b7280;}
+.amber{color:#f59e0b;}
+
+/* Top bar */
+#topbar{
+  background:#02060c;
+  border-bottom:2px solid #f59e0b;
+  padding:5px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:200;
+  flex-wrap:wrap;
+  gap:6px;
 }
 
-/* ticker animation */
+.logo{color:#f59e0b;font-size:18px;font-weight:700;letter-spacing:4px;}
+
+.topbar-right{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+
+/* Ticker tape */
+#tickerWrapper{
+  background:#02060c;
+  border-bottom:1px solid #1a2a3a;
+  overflow:hidden;
+  height:30px;
+  display:flex;
+  align-items:center;
+}
 
 .ticker-track{
-display:inline-block;
-white-space:nowrap;
-animation:tickerScroll 40s linear infinite;
+  display:inline-block;
+  white-space:nowrap;
+  animation:tickerScroll 60s linear infinite;
 }
 
 @keyframes tickerScroll{
-0%{transform:translateX(0)}
-100%{transform:translateX(-50%)}
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
 }
 
+/* Add bar */
+#addBar{
+  background:#080f18;
+  border-bottom:1px solid #1a2a3a;
+  padding:7px 14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+/* Panel */
+.panel{background:#0a1220;border:1px solid #1a2a3a;padding:12px;}
+
+.ph{
+  color:#f59e0b;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  border-bottom:1px solid #1a2a3a;
+  padding-bottom:6px;
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* Grids */
+.main-grid{
+  display:grid;
+  grid-template-columns:1.4fr 1fr 0.8fr;
+  gap:8px;
+  padding:8px;
+}
+
+.chart-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:0 8px 8px;
+}
+
+.bottom-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:0 8px 8px;
+}
+
+@media(max-width:960px){
+  .main-grid{grid-template-columns:1fr;}
+  .chart-grid{grid-template-columns:1fr;}
+  .bottom-grid{grid-template-columns:1fr;}
+}
+
+/* Inputs */
+.ti{
+  background:#06101a;
+  border:1px solid #1a2a3a;
+  color:#00d964;
+  padding:6px 9px;
+  font-family:inherit;
+  font-size:12px;
+  outline:none;
+}
+.ti::placeholder{color:#374151;}
+.ti:focus{border-color:#f59e0b;}
+
+.tb{
+  background:#f59e0b;
+  color:#02060c;
+  border:none;
+  padding:6px 16px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.tb:hover{background:#fbbf24;}
+
+.tb-rm{
+  background:transparent;
+  color:#ef4444;
+  border:1px solid #ef4444;
+  padding:2px 7px;
+  font-family:inherit;
+  font-size:10px;
+  cursor:pointer;
+  text-transform:uppercase;
+}
+.tb-rm:hover{background:#ef4444;color:#fff;}
+
+/* Table */
+.tt{width:100%;border-collapse:collapse;font-size:12px;}
+.tt th{
+  color:#f59e0b;
+  text-align:left;
+  padding:4px 7px;
+  border-bottom:1px solid #1a2a3a;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.tt td{
+  padding:5px 7px;
+  border-bottom:1px solid #0a1220;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+.tt tr:hover td{background:#0d1a28;}
+
+/* Metric card */
+.mc{background:#06101a;border:1px solid #1a2a3a;border-left:3px solid #f59e0b;padding:9px 11px;}
+.mc-label{color:#6b7280;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.mc-value{color:#e2e8f0;font-size:17px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;}
+
+/* Status */
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.sdot{width:7px;height:7px;border-radius:50%;animation:sdotPulse 1.5s infinite;}
+@keyframes sdotPulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* Heatmap */
+.hcell{
+  padding:8px 4px;
+  text-align:center;
+  font-size:10px;
+  font-weight:600;
+  border:1px solid #02060c;
+  cursor:default;
+  transition:transform .1s;
+  line-height:1.4;
+}
+.hcell:hover{transform:scale(1.06);}
+
+/* News */
+.ni{border-bottom:1px solid #1a2a3a;padding:8px 0;}
+.ni:last-child{border-bottom:none;}
+
+/* Spinner */
+.spin{
+  display:inline-block;
+  width:10px;height:10px;
+  border:1px solid #1a2a3a;
+  border-top-color:#f59e0b;
+  border-radius:50%;
+  animation:doSpin .7s linear infinite;
+}
+@keyframes doSpin{to{transform:rotate(360deg);}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:#050a0f;}
+::-webkit-scrollbar-thumb{background:#1a2a3a;}
 </style>
-
 </head>
+<body>
 
-<body class="p-6">
-
-<h1 class="text-3xl font-bold mb-6">PFT-X Financial Terminal</h1>
-<div class="overflow-hidden mb-4">
-  <div id="tickerTrack" class="ticker-track whitespace-nowrap"></div>
-</div>
-<div id="lastUpdated" class="text-xs text-gray-400 absolute top-6 right-6">
-Last updated: --
-</div>
-
-<!-- Portfolio Input -->
-
-<div class="card mb-6">
-
-<h2 class="text-xl mb-3">Add Stock</h2>
-
-<input id="ticker" placeholder="Ticker" class="text-black p-2 mr-2">
-<input id="shares" placeholder="Shares" type="number" class="text-black p-2 mr-2">
-<input id="buyPrice" placeholder="Buy Price" type="number" class="text-black p-2 mr-2">
-
-<button onclick="addStock()" class="bg-blue-600 px-4 py-2 rounded">
-Add
-</button>
-
+<!-- TOP BAR -->
+<div id="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="logo">PFT-X</span>
+    <span style="color:#1a2a3a;">│</span>
+    <span class="neu" style="font-size:10px;letter-spacing:2px;">PERSONAL FINANCIAL TERMINAL</span>
+  </div>
+  <div class="topbar-right">
+    <div id="marketStatus" class="status-badge neu">
+      <div class="sdot" style="background:#6b7280;"></div>
+      <span>CHECKING...</span>
+    </div>
+    <span class="neu" style="font-size:11px;">GBP/USD <span id="fxRate" class="amber">—</span></span>
+    <span id="liveClock" style="font-size:12px;font-variant-numeric:tabular-nums;">00:00:00</span>
+    <span id="lastUpdated" class="neu" style="font-size:10px;">UPDATED: —</span>
+  </div>
 </div>
 
-
-<!-- Portfolio Stats -->
-
-<div class="grid grid-cols-3 gap-4 mb-6">
-
-<div class="card">
-<h3>Portfolio Value</h3>
-<p id="portfolioValue">£0</p>
+<!-- TICKER TAPE -->
+<div id="tickerWrapper">
+  <div id="tickerTrack" class="ticker-track" style="padding-left:100vw;"></div>
 </div>
 
-<div class="card">
-<h3>Total Profit</h3>
-<p id="portfolioProfit">£0</p>
+<!-- ADD POSITION BAR -->
+<div id="addBar">
+  <span class="amber" style="font-size:10px;letter-spacing:2px;white-space:nowrap;">ADD POSITION</span>
+  <input id="ticker"   class="ti" placeholder="TICKER"  style="width:90px;"  autocomplete="off" spellcheck="false">
+  <input id="shares"   class="ti" placeholder="SHARES"  style="width:80px;"  type="number" min="0.0001" step="any">
+  <input id="buyPrice" class="ti" placeholder="BUY £"   style="width:100px;" type="number" min="0.0001" step="any">
+  <button onclick="addStock()" class="tb">+ ADD</button>
+  <span id="addError" class="neg" style="font-size:11px;"></span>
 </div>
 
-<div class="card">
-<h3>AI Score</h3>
-<p id="aiScore">0</p>
-</div>
+<!-- MAIN 3-COLUMN GRID -->
+<div class="main-grid">
+
+  <!-- COLUMN 1: HOLDINGS TABLE -->
+  <div class="panel">
+    <div class="ph">Portfolio Holdings</div>
+    <div id="noPositions" style="color:#6b7280;font-size:11px;text-align:center;padding:24px 0;">
+      No positions. Add a stock above.
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="tt" id="portfolioTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Shares</th>
+            <th>Buy £</th>
+            <th>Now £</th>
+            <th>Value £</th>
+            <th>P&amp;L £</th>
+            <th>Return</th>
+            <th>Day</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="portfolioBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COLUMN 2: METRICS + INSIGHT -->
+  <div class="panel">
+    <div class="ph">Portfolio Metrics</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;">
+      <div class="mc">
+        <div class="mc-label">Total Value</div>
+        <div class="mc-value" id="portfolioValue">£0.00</div>
+      </div>
+      <div class="mc">
+        <div class="mc-label">Total P&amp;L</div>
+        <div class="mc-value" id="portfolioProfit">£0.00</div>
+      </div>
+      <div class="mc">
+        <div class="mc-label">Total Return</div>
+        <div class="mc-value" id="portfolioReturn">0.00%</div>
+      </div>
+      <div class="mc">
+        <div class="mc-label">AI Score /100</div>
+        <div class="mc-value amber" id="aiScore">—</div>
+      </div>
+      <div class="mc">
+        <div class="mc-label">Sharpe Ratio</div>
+        <div class="mc-value" id="sharpeRatio">—</div>
+      </div>
+      <div class="mc">
+        <div class="mc-label">Day VaR 95%</div>
+        <div class="mc-value neg" id="varValue">—</div>
+      </div>
+    </div>
+    <div class="ph" style="margin-top:4px;">Market Insight</div>
+    <div id="marketInsight" style="color:#6b7280;font-size:11px;line-height:1.7;">
+      Add a stock to see insights.
+    </div>
+  </div>
+
+  <!-- COLUMN 3: NEWS -->
+  <div class="panel" style="max-height:490px;overflow-y:auto;">
+    <div class="ph">
+      Market News
+      <span id="newsLoader" style="display:none;" class="spin"></span>
+    </div>
+    <div id="newsContainer" style="color:#6b7280;font-size:11px;">
+      <span class="spin"></span>&nbsp;Loading...
+    </div>
+  </div>
 
 </div>
 
-<!-- Charts -->
-
-<div class="grid grid-cols-2 gap-6 mb-6">
-
-<div class="card">
-<h2>Portfolio Allocation</h2>
-<canvas id="allocationChart"></canvas>
+<!-- CHARTS ROW -->
+<div class="chart-grid">
+  <div class="panel">
+    <div class="ph">Portfolio Allocation</div>
+    <canvas id="allocationChart" style="max-height:230px;"></canvas>
+  </div>
+  <div class="panel">
+    <div class="ph">
+      Monte Carlo Simulation
+      <span class="neu" style="font-size:9px;">GBM · 30 DAYS · 200 PATHS</span>
+    </div>
+    <canvas id="monteChart" style="max-height:230px;"></canvas>
+  </div>
 </div>
 
-<div class="card">
-<h2>Monte Carlo Simulation</h2>
-<canvas id="monteChart"></canvas>
-</div>
+<!-- BOTTOM ROW -->
+<div class="bottom-grid">
+
+  <div class="panel">
+    <div class="ph">
+      Market Heatmap
+      <span class="neu" style="font-size:9px;">REFRESHES EVERY 30s</span>
+    </div>
+    <div id="heatmap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(85px,1fr));gap:3px;"></div>
+  </div>
+
+  <div class="panel" style="overflow-x:auto;">
+    <div class="ph">
+      Institutional Positions
+      <span class="neu" style="font-size:9px;">13F DATA</span>
+    </div>
+    <table class="tt">
+      <thead>
+        <tr>
+          <th>Institution</th>
+          <th>Stock</th>
+          <th>Position</th>
+          <th>Change</th>
+          <th>Reported</th>
+        </tr>
+      </thead>
+      <tbody id="hedgeTable"></tbody>
+    </table>
+  </div>
 
 </div>
 
-
-<!-- Market Insight -->
-
-<div class="card mb-6">
-
-<h2 class="text-xl mb-3">Market Insight</h2>
-
-<div id="marketInsight" class="text-gray-300">
-Select a stock to analyse.
-</div>
-
-</div>
-<!-- Wall Street Heatmap -->
-
-<div class="card mb-6">
-
-<h2 class="text-xl mb-3">Market Heatmap</h2>
-
-<div id="heatmap" class="grid grid-cols-6 gap-2"></div>
-
-</div>
-
-
-<!-- Hedge Fund Tracker -->
-
-<div class="card">
-
-<h2 class="text-xl mb-3">Hedge Fund Tracker</h2>
-
-<table class="w-full">
-
-<thead>
-<tr>
-<th>Fund</th>
-<th>Stock</th>
-<th>Position</th>
-</tr>
-</thead>
-
-<tbody id="hedgeTable"></tbody>
-
-</table>
-
+<!-- EFFICIENT FRONTIER -->
+<div style="padding:0 8px 16px;">
+  <div class="panel">
+    <div class="ph">
+      Efficient Frontier
+      <span class="neu" style="font-size:9px;">MARKOWITZ PORTFOLIO THEORY · REQUIRES 2+ ASSETS</span>
+    </div>
+    <div id="frontierMsg" style="color:#6b7280;font-size:11px;text-align:center;padding:14px 0;">
+      Add 2 or more stocks to generate the efficient frontier.
+    </div>
+    <canvas id="frontierChart" style="max-height:260px;display:none;"></canvas>
+  </div>
 </div>
 
 <script src="portfolio.js"></script>
 <script src="charts.js"></script>
 <script src="dashboard.js"></script>
-
+<script src="Quant Engine.js"></script>
 </body>
 </html>
