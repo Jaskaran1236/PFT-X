@@ -5,31 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PFT-X | Personal Financial Terminal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
+/* ── ROOT PALETTE ───────────────────────────────────────── */
+:root{
+  --bg0:    #020a16;
+  --bg1:    #040e1e;
+  --bg2:    #061228;
+  --bg3:    #030c1c;
+  --border:         #102240;
+  --border-g:       rgba(110,170,215,.16);
+  /* Marble-pearl blues */
+  --m0: #4a8fbe;
+  --m1: #7ab8d8;
+  --m2: #aed4ea;
+  --m3: #d8eef8;
+  --text1: #c8dff0;
+  --text2: #4a7090;
+  --pos:   #00e07a;
+  --neg:   #f04458;
+}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 
 body{
-  background:#050a0f;
-  color:#e2e8f0;
+  background:var(--bg0);
+  color:var(--text1);
   font-family:'JetBrains Mono','Courier New',monospace;
   font-size:13px;
   overflow-x:hidden;
+  min-height:100vh;
 }
 
-/* Colours */
-.pos{color:#00d964;}
-.neg{color:#ef4444;}
-.neu{color:#6b7280;}
-.amber{color:#f59e0b;}
+/* ── ATMOSPHERIC GLOW ORBS ──────────────────────────────── */
+.glow-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(100px);
+  pointer-events:none;
+  z-index:0;
+}
+@keyframes orbDrift{
+  0%,100%{transform:translate(0,0) scale(1);opacity:.6;}
+  33%    {transform:translate(40px,-30px) scale(1.08);opacity:.9;}
+  66%    {transform:translate(-20px,20px) scale(.95);opacity:.7;}
+}
+.orb-1{
+  width:700px;height:700px;
+  top:-300px;left:-250px;
+  background:radial-gradient(circle,rgba(40,100,180,.14) 0%,transparent 68%);
+  animation:orbDrift 18s ease-in-out infinite;
+}
+.orb-2{
+  width:550px;height:550px;
+  bottom:-200px;right:-180px;
+  background:radial-gradient(circle,rgba(60,140,200,.10) 0%,transparent 68%);
+  animation:orbDrift 24s ease-in-out infinite 6s;
+}
+.orb-3{
+  width:400px;height:400px;
+  top:40%;left:45%;
+  background:radial-gradient(circle,rgba(30,80,150,.07) 0%,transparent 68%);
+  animation:orbDrift 30s ease-in-out infinite 12s;
+}
 
-/* Top bar */
+/* ── PARTICLE CANVAS ────────────────────────────────────── */
+#particles{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* all content above particles */
+#app{position:relative;z-index:1;}
+
+/* ── MARBLE SHIMMER TEXT ────────────────────────────────── */
+@keyframes marbleFlow{
+  0%  {background-position:-300% center;}
+  100%{background-position: 300% center;}
+}
+.marble-text{
+  background:linear-gradient(90deg,
+    var(--m0)  0%,
+    var(--m2) 25%,
+    var(--m3) 48%,
+    var(--m2) 52%,
+    var(--m1) 75%,
+    var(--m0) 100%
+  );
+  background-size:300% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:marbleFlow 6s linear infinite;
+}
+
+/* ── PANEL ENTRANCE ANIMATION ───────────────────────────── */
+@keyframes panelReveal{
+  0%  {opacity:0;transform:translateY(22px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+.pe{
+  opacity:0;
+  animation:panelReveal .75s cubic-bezier(.22,.68,0,1.15) forwards;
+}
+.d1{animation-delay:.08s;} .d2{animation-delay:.18s;}
+.d3{animation-delay:.28s;} .d4{animation-delay:.38s;}
+.d5{animation-delay:.48s;} .d6{animation-delay:.58s;}
+.d7{animation-delay:.68s;} .d8{animation-delay:.82s;}
+.d9{animation-delay:.96s;}
+
+/* ── TOPBAR ─────────────────────────────────────────────── */
 #topbar{
-  background:#02060c;
-  border-bottom:2px solid #f59e0b;
-  padding:5px 14px;
+  background:rgba(3,10,22,.92);
+  border-bottom:1px solid var(--border-g);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  padding:6px 18px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -38,221 +133,496 @@ body{
   z-index:200;
   flex-wrap:wrap;
   gap:6px;
+  overflow:hidden;
+}
+/* Animated marble border line */
+#topbar::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    var(--m0) 20%,
+    var(--m2) 50%,
+    var(--m0) 80%,
+    transparent 100%
+  );
+  background-size:200% auto;
+  animation:marbleFlow 4s linear infinite;
 }
 
-.logo{color:#f59e0b;font-size:18px;font-weight:700;letter-spacing:4px;}
+.logo{font-size:20px;font-weight:700;letter-spacing:6px;}
+.topbar-right{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
 
-.topbar-right{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
-
-/* Ticker tape */
+/* ── TICKER TAPE ────────────────────────────────────────── */
 #tickerWrapper{
-  background:#02060c;
-  border-bottom:1px solid #1a2a3a;
+  background:rgba(3,8,18,.96);
+  border-bottom:1px solid var(--border);
   overflow:hidden;
   height:30px;
   display:flex;
   align-items:center;
 }
-
 .ticker-track{
   display:inline-block;
   white-space:nowrap;
-  animation:tickerScroll 60s linear infinite;
+  animation:tickerScroll 70s linear infinite;
 }
-
 @keyframes tickerScroll{
-  0%{transform:translateX(0);}
+  0%  {transform:translateX(0);}
   100%{transform:translateX(-50%);}
 }
 
-/* Add bar */
+/* ── ADD BAR ────────────────────────────────────────────── */
 #addBar{
-  background:#080f18;
-  border-bottom:1px solid #1a2a3a;
-  padding:7px 14px;
+  background:rgba(3,10,22,.96);
+  border-bottom:1px solid var(--border);
+  padding:8px 18px;
   display:flex;
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
+  backdrop-filter:blur(10px);
 }
 
-/* Panel */
-.panel{background:#0a1220;border:1px solid #1a2a3a;padding:12px;}
+/* ── PANEL ──────────────────────────────────────────────── */
+.panel{
+  background:rgba(5,14,32,.82);
+  border:1px solid var(--border-g);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  padding:14px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .4s, box-shadow .4s;
+}
+/* Inner marble sheen */
+.panel::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,
+    rgba(74,143,190,.05) 0%,
+    transparent 55%,
+    rgba(40,90,150,.03) 100%
+  );
+  pointer-events:none;
+}
+.panel:hover{
+  border-color:rgba(122,184,216,.3);
+  box-shadow:0 4px 40px rgba(40,110,180,.1), 0 0 0 1px rgba(122,184,216,.08);
+}
 
+/* ── PANEL HEADING ──────────────────────────────────────── */
 .ph{
-  color:#f59e0b;
   font-size:10px;
   font-weight:700;
-  letter-spacing:2px;
+  letter-spacing:2.5px;
   text-transform:uppercase;
-  border-bottom:1px solid #1a2a3a;
-  padding-bottom:6px;
-  margin-bottom:10px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:8px;
+  margin-bottom:12px;
   display:flex;
   align-items:center;
   gap:8px;
 }
 
-/* Grids */
+/* ── GRIDS ──────────────────────────────────────────────── */
 .main-grid{
   display:grid;
   grid-template-columns:1.4fr 1fr 0.8fr;
   gap:8px;
   padding:8px;
 }
-
 .chart-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
   padding:0 8px 8px;
 }
-
 .bottom-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
   padding:0 8px 8px;
 }
-
 @media(max-width:960px){
-  .main-grid{grid-template-columns:1fr;}
-  .chart-grid{grid-template-columns:1fr;}
-  .bottom-grid{grid-template-columns:1fr;}
+  .main-grid,.chart-grid,.bottom-grid{grid-template-columns:1fr;}
+  .team-grid{grid-template-columns:1fr!important;}
 }
 
-/* Inputs */
+/* ── INPUTS ─────────────────────────────────────────────── */
 .ti{
-  background:#06101a;
-  border:1px solid #1a2a3a;
-  color:#00d964;
-  padding:6px 9px;
+  background:rgba(3,9,20,.9);
+  border:1px solid var(--border);
+  color:var(--pos);
+  padding:7px 10px;
   font-family:inherit;
   font-size:12px;
   outline:none;
+  transition:border-color .3s, box-shadow .3s;
 }
-.ti::placeholder{color:#374151;}
-.ti:focus{border-color:#f59e0b;}
+.ti::placeholder{color:#1e3552;}
+.ti:focus{
+  border-color:var(--m0);
+  box-shadow:0 0 14px rgba(74,143,190,.22);
+}
 
+/* ── BUTTON ─────────────────────────────────────────────── */
 .tb{
-  background:#f59e0b;
-  color:#02060c;
+  background:linear-gradient(135deg,var(--m0),var(--m1));
+  color:#020a16;
   border:none;
-  padding:6px 16px;
+  padding:7px 20px;
   font-family:inherit;
   font-size:11px;
   font-weight:700;
   cursor:pointer;
-  letter-spacing:1px;
+  letter-spacing:1.5px;
   text-transform:uppercase;
   white-space:nowrap;
+  position:relative;
+  overflow:hidden;
+  transition:box-shadow .3s, filter .3s;
 }
-.tb:hover{background:#fbbf24;}
+@keyframes btnSheen{
+  0%  {transform:translateX(-120%)skewX(-20deg);}
+  100%{transform:translateX(220%)skewX(-20deg);}
+}
+.tb::after{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:40%;height:100%;
+  background:rgba(255,255,255,.25);
+  transform:translateX(-120%)skewX(-20deg);
+}
+.tb:hover::after{animation:btnSheen .55s ease forwards;}
+.tb:hover{
+  filter:brightness(1.15);
+  box-shadow:0 0 24px rgba(122,184,216,.4);
+}
 
 .tb-rm{
   background:transparent;
-  color:#ef4444;
-  border:1px solid #ef4444;
+  color:var(--neg);
+  border:1px solid var(--neg);
   padding:2px 7px;
   font-family:inherit;
   font-size:10px;
   cursor:pointer;
   text-transform:uppercase;
+  transition:all .2s;
 }
-.tb-rm:hover{background:#ef4444;color:#fff;}
+.tb-rm:hover{
+  background:var(--neg);
+  color:#fff;
+  box-shadow:0 0 12px rgba(240,68,88,.3);
+}
 
-/* Table */
+/* ── TABLE ──────────────────────────────────────────────── */
 .tt{width:100%;border-collapse:collapse;font-size:12px;}
 .tt th{
-  color:#f59e0b;
+  color:var(--m1);
   text-align:left;
-  padding:4px 7px;
-  border-bottom:1px solid #1a2a3a;
+  padding:5px 8px;
+  border-bottom:1px solid var(--border);
   font-size:10px;
-  letter-spacing:1px;
+  letter-spacing:1.5px;
   text-transform:uppercase;
   white-space:nowrap;
 }
 .tt td{
-  padding:5px 7px;
-  border-bottom:1px solid #0a1220;
+  padding:6px 8px;
+  border-bottom:1px solid rgba(16,34,64,.5);
   vertical-align:middle;
   white-space:nowrap;
+  transition:background .2s;
 }
-.tt tr:hover td{background:#0d1a28;}
+.tt tr{transition:background .2s;}
+.tt tr:hover td{background:rgba(74,143,190,.07);}
 
-/* Metric card */
-.mc{background:#06101a;border:1px solid #1a2a3a;border-left:3px solid #f59e0b;padding:9px 11px;}
-.mc-label{color:#6b7280;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
-.mc-value{color:#e2e8f0;font-size:17px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;}
+/* ── METRIC CARD ────────────────────────────────────────── */
+@keyframes leftGlow{
+  0%,100%{border-left-color:var(--m0);box-shadow:-2px 0 12px rgba(74,143,190,.2);}
+  50%    {border-left-color:var(--m2);box-shadow:-2px 0 22px rgba(174,212,234,.35);}
+}
+.mc{
+  background:rgba(3,10,24,.88);
+  border:1px solid var(--border-g);
+  border-left:3px solid var(--m0);
+  padding:11px 13px;
+  transition:transform .25s, border-color .3s;
+  animation:leftGlow 5s ease-in-out infinite;
+  position:relative;
+  overflow:hidden;
+}
+.mc::after{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(174,212,234,.15),transparent);
+}
+.mc:hover{transform:translateY(-3px);}
+.mc-label{color:var(--text2);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
+.mc-value{
+  color:var(--text1);
+  font-size:17px;
+  font-weight:700;
+  margin-top:3px;
+  font-variant-numeric:tabular-nums;
+}
 
-/* Status */
-.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;letter-spacing:1px;text-transform:uppercase;}
-.sdot{width:7px;height:7px;border-radius:50%;animation:sdotPulse 1.5s infinite;}
-@keyframes sdotPulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+/* ── STATUS BADGE ───────────────────────────────────────── */
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;}
+@keyframes sdotPulse{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%    {opacity:.35;transform:scale(.75);}
+}
+.sdot{width:7px;height:7px;border-radius:50%;animation:sdotPulse 1.6s ease-in-out infinite;}
 
-/* Heatmap */
+/* ── HEATMAP ────────────────────────────────────────────── */
 .hcell{
-  padding:8px 4px;
+  padding:9px 4px;
   text-align:center;
   font-size:10px;
   font-weight:600;
-  border:1px solid #02060c;
+  border:1px solid var(--bg0);
   cursor:default;
-  transition:transform .1s;
-  line-height:1.4;
+  transition:transform .18s, box-shadow .18s, z-index 0s;
+  line-height:1.5;
 }
-.hcell:hover{transform:scale(1.06);}
+.hcell:hover{
+  transform:scale(1.1);
+  box-shadow:0 6px 24px rgba(0,0,0,.6);
+  z-index:3;
+  position:relative;
+}
 
-/* News */
-.ni{border-bottom:1px solid #1a2a3a;padding:8px 0;}
+/* ── NEWS ───────────────────────────────────────────────── */
+.ni{
+  border-bottom:1px solid var(--border);
+  padding:9px 0;
+  transition:opacity .25s, transform .25s;
+}
+.ni:hover{opacity:.8;transform:translateX(2px);}
 .ni:last-child{border-bottom:none;}
 
-/* Spinner */
+/* ── SPINNER ────────────────────────────────────────────── */
 .spin{
   display:inline-block;
   width:10px;height:10px;
-  border:1px solid #1a2a3a;
-  border-top-color:#f59e0b;
+  border:1.5px solid var(--border);
+  border-top-color:var(--m1);
   border-radius:50%;
-  animation:doSpin .7s linear infinite;
+  animation:doSpin .75s linear infinite;
 }
 @keyframes doSpin{to{transform:rotate(360deg);}}
 
-/* Scrollbar */
+/* ── SCROLLBAR ──────────────────────────────────────────── */
 ::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:#050a0f;}
-::-webkit-scrollbar-thumb{background:#1a2a3a;}
+::-webkit-scrollbar-track{background:var(--bg0);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+::-webkit-scrollbar-thumb:hover{background:var(--m0);}
+
+/* ── TEAM SECTION ───────────────────────────────────────── */
+.team-section{padding:0 8px 36px;}
+
+.team-header{
+  text-align:center;
+  padding:24px 0 18px;
+}
+.team-header-label{
+  font-size:9px;
+  letter-spacing:5px;
+  text-transform:uppercase;
+  color:var(--text2);
+  margin-bottom:10px;
+}
+.team-header-title{
+  font-size:11px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  position:relative;
+  display:inline-block;
+}
+.team-header-line{
+  width:120px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--m0),transparent);
+  margin:10px auto 0;
+  animation:marbleFlow 4s linear infinite;
+  background-size:200% auto;
+}
+
+.team-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(30px) scale(.97);}
+  to  {opacity:1;transform:translateY(0)    scale(1);}
+}
+.team-card{
+  background:rgba(5,14,32,.85);
+  border:1px solid var(--border-g);
+  backdrop-filter:blur(16px);
+  padding:32px 24px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .4s, box-shadow .5s, transform .4s;
+  cursor:default;
+  opacity:0;
+  animation:cardIn .8s cubic-bezier(.22,.68,0,1.15) forwards;
+}
+.team-card.d7{animation-delay:.7s;}
+.team-card.d8{animation-delay:.85s;}
+.team-card.d9{animation-delay:1.0s;}
+
+/* Marble vein across top */
+.team-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:10%;right:10%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--m1) 30%,var(--m3) 50%,var(--m1) 70%,transparent);
+  background-size:200% auto;
+  animation:marbleFlow 5s linear infinite;
+}
+/* Radial glow background */
+.team-card::after{
+  content:'';
+  position:absolute;
+  top:-30%;left:-20%;
+  width:140%;height:140%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(74,143,190,.08) 0%,transparent 60%);
+  pointer-events:none;
+  transition:opacity .4s;
+  opacity:0;
+}
+.team-card:hover::after{opacity:1;}
+.team-card:hover{
+  border-color:rgba(174,212,234,.35);
+  box-shadow:0 24px 70px rgba(20,80,160,.18), 0 0 50px rgba(74,143,190,.1);
+  transform:translateY(-6px);
+}
+
+/* Founder card — slightly wider glow */
+.team-card.founder:hover{
+  box-shadow:0 30px 90px rgba(20,80,160,.22), 0 0 60px rgba(122,184,216,.14);
+}
+
+@keyframes monogramPulse{
+  0%,100%{box-shadow:0 0 20px rgba(74,143,190,.3);}
+  50%    {box-shadow:0 0 35px rgba(174,212,234,.5);}
+}
+.team-monogram{
+  width:60px;height:60px;
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:1px;
+  color:var(--bg0);
+  margin:0 auto 16px;
+  position:relative;
+  z-index:1;
+  animation:monogramPulse 4s ease-in-out infinite;
+}
+.mono-founder{background:linear-gradient(140deg,var(--m0),var(--m2));}
+.mono-rohan  {background:linear-gradient(140deg,#3478a8,#60a8cc);}
+.mono-callum {background:linear-gradient(140deg,#2a6898,#5090bc);}
+
+.team-name{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  margin-bottom:7px;
+  position:relative;
+  z-index:1;
+  line-height:1.5;
+}
+.team-role{
+  font-size:9px;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+  color:var(--text2);
+  line-height:1.8;
+  position:relative;
+  z-index:1;
+}
+
+@keyframes badgePulse{
+  0%,100%{border-color:var(--m0);color:var(--m1);}
+  50%    {border-color:var(--m2);color:var(--m2);}
+}
+.founder-badge{
+  display:inline-block;
+  font-size:8px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  padding:4px 14px;
+  border:1px solid var(--m0);
+  color:var(--m1);
+  margin-top:12px;
+  position:relative;
+  z-index:1;
+  animation:badgePulse 4s ease-in-out infinite;
+}
+
+/* ── COLOUR UTILITIES (kept for JS compat) ──────────────── */
+.pos{color:var(--pos);}
+.neg{color:var(--neg);}
+.neu{color:var(--text2);}
+.amber{color:var(--m1);}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
+<!-- Atmospheric orbs -->
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+<div class="glow-orb orb-3"></div>
+
+<!-- Particle field -->
+<canvas id="particles"></canvas>
+
+<div id="app">
+
+<!-- ══ TOP BAR ══════════════════════════════════════════════ -->
 <div id="topbar">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <span class="logo">PFT-X</span>
-    <span style="color:#1a2a3a;">│</span>
-    <span class="neu" style="font-size:10px;letter-spacing:2px;">PERSONAL FINANCIAL TERMINAL</span>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <span class="logo marble-text">PFT-X</span>
+    <span style="color:var(--border);font-size:18px;line-height:1;">│</span>
+    <span class="neu" style="font-size:9px;letter-spacing:3px;">PERSONAL FINANCIAL TERMINAL</span>
   </div>
   <div class="topbar-right">
     <div id="marketStatus" class="status-badge neu">
-      <div class="sdot" style="background:#6b7280;"></div>
+      <div class="sdot" style="background:var(--text2);"></div>
       <span>CHECKING...</span>
     </div>
     <span class="neu" style="font-size:11px;">GBP/USD <span id="fxRate" class="amber">—</span></span>
-    <span id="liveClock" style="font-size:12px;font-variant-numeric:tabular-nums;">00:00:00</span>
+    <span id="liveClock" style="font-size:12px;font-variant-numeric:tabular-nums;color:var(--text1);">00:00:00</span>
     <span id="lastUpdated" class="neu" style="font-size:10px;">UPDATED: —</span>
   </div>
 </div>
 
-<!-- TICKER TAPE -->
+<!-- ══ TICKER TAPE ═══════════════════════════════════════════ -->
 <div id="tickerWrapper">
   <div id="tickerTrack" class="ticker-track" style="padding-left:100vw;"></div>
 </div>
 
-<!-- ADD POSITION BAR -->
+<!-- ══ ADD POSITION BAR ══════════════════════════════════════ -->
 <div id="addBar">
-  <span class="amber" style="font-size:10px;letter-spacing:2px;white-space:nowrap;">ADD POSITION</span>
+  <span class="amber" style="font-size:10px;letter-spacing:2.5px;white-space:nowrap;">ADD POSITION</span>
   <input id="ticker"   class="ti" placeholder="TICKER"  style="width:90px;"  autocomplete="off" spellcheck="false">
   <input id="shares"   class="ti" placeholder="SHARES"  style="width:80px;"  type="number" min="0.0001" step="any">
   <input id="buyPrice" class="ti" placeholder="BUY £"   style="width:100px;" type="number" min="0.0001" step="any">
@@ -260,28 +630,22 @@ body{
   <span id="addError" class="neg" style="font-size:11px;"></span>
 </div>
 
-<!-- MAIN 3-COLUMN GRID -->
+<!-- ══ MAIN 3-COL GRID ═══════════════════════════════════════ -->
 <div class="main-grid">
 
-  <!-- COLUMN 1: HOLDINGS TABLE -->
-  <div class="panel">
-    <div class="ph">Portfolio Holdings</div>
-    <div id="noPositions" style="color:#6b7280;font-size:11px;text-align:center;padding:24px 0;">
+  <!-- C1: HOLDINGS -->
+  <div class="panel pe d1">
+    <div class="ph marble-text">Portfolio Holdings</div>
+    <div id="noPositions" style="color:var(--text2);font-size:11px;text-align:center;padding:28px 0;">
       No positions. Add a stock above.
     </div>
     <div style="overflow-x:auto;">
       <table class="tt" id="portfolioTable" style="display:none;">
         <thead>
           <tr>
-            <th>Ticker</th>
-            <th>Shares</th>
-            <th>Buy £</th>
-            <th>Now £</th>
-            <th>Value £</th>
-            <th>P&amp;L £</th>
-            <th>Return</th>
-            <th>Day</th>
-            <th></th>
+            <th>Ticker</th><th>Shares</th><th>Buy £</th>
+            <th>Now £</th><th>Value £</th><th>P&amp;L £</th>
+            <th>Return</th><th>Day</th><th></th>
           </tr>
         </thead>
         <tbody id="portfolioBody"></tbody>
@@ -289,10 +653,10 @@ body{
     </div>
   </div>
 
-  <!-- COLUMN 2: METRICS + INSIGHT -->
-  <div class="panel">
-    <div class="ph">Portfolio Metrics</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;">
+  <!-- C2: METRICS + INSIGHT -->
+  <div class="panel pe d2">
+    <div class="ph marble-text">Portfolio Metrics</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
       <div class="mc">
         <div class="mc-label">Total Value</div>
         <div class="mc-value" id="portfolioValue">£0.00</div>
@@ -318,33 +682,33 @@ body{
         <div class="mc-value neg" id="varValue">—</div>
       </div>
     </div>
-    <div class="ph" style="margin-top:4px;">Market Insight</div>
-    <div id="marketInsight" style="color:#6b7280;font-size:11px;line-height:1.7;">
+    <div class="ph marble-text" style="margin-top:4px;">Market Insight</div>
+    <div id="marketInsight" style="color:var(--text2);font-size:11px;line-height:1.85;">
       Add a stock to see insights.
     </div>
   </div>
 
-  <!-- COLUMN 3: NEWS -->
-  <div class="panel" style="max-height:490px;overflow-y:auto;">
-    <div class="ph">
+  <!-- C3: NEWS -->
+  <div class="panel pe d3" style="max-height:490px;overflow-y:auto;">
+    <div class="ph marble-text">
       Market News
       <span id="newsLoader" style="display:none;" class="spin"></span>
     </div>
-    <div id="newsContainer" style="color:#6b7280;font-size:11px;">
+    <div id="newsContainer" style="color:var(--text2);font-size:11px;">
       <span class="spin"></span>&nbsp;Loading...
     </div>
   </div>
 
 </div>
 
-<!-- CHARTS ROW -->
+<!-- ══ CHARTS ROW ═════════════════════════════════════════════ -->
 <div class="chart-grid">
-  <div class="panel">
-    <div class="ph">Portfolio Allocation</div>
+  <div class="panel pe d4">
+    <div class="ph marble-text">Portfolio Allocation</div>
     <canvas id="allocationChart" style="max-height:230px;"></canvas>
   </div>
-  <div class="panel">
-    <div class="ph">
+  <div class="panel pe d4">
+    <div class="ph marble-text">
       Monte Carlo Simulation
       <span class="neu" style="font-size:9px;">GBM · 30 DAYS · 200 PATHS</span>
     </div>
@@ -352,30 +716,27 @@ body{
   </div>
 </div>
 
-<!-- BOTTOM ROW -->
+<!-- ══ BOTTOM ROW ════════════════════════════════════════════ -->
 <div class="bottom-grid">
 
-  <div class="panel">
-    <div class="ph">
+  <div class="panel pe d5">
+    <div class="ph marble-text">
       Market Heatmap
       <span class="neu" style="font-size:9px;">REFRESHES EVERY 30s</span>
     </div>
     <div id="heatmap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(85px,1fr));gap:3px;"></div>
   </div>
 
-  <div class="panel" style="overflow-x:auto;">
-    <div class="ph">
+  <div class="panel pe d5" style="overflow-x:auto;">
+    <div class="ph marble-text">
       Institutional Positions
       <span class="neu" style="font-size:9px;">13F DATA</span>
     </div>
     <table class="tt">
       <thead>
         <tr>
-          <th>Institution</th>
-          <th>Stock</th>
-          <th>Position</th>
-          <th>Change</th>
-          <th>Reported</th>
+          <th>Institution</th><th>Stock</th>
+          <th>Position</th><th>Change</th><th>Reported</th>
         </tr>
       </thead>
       <tbody id="hedgeTable"></tbody>
@@ -384,19 +745,114 @@ body{
 
 </div>
 
-<!-- EFFICIENT FRONTIER -->
-<div style="padding:0 8px 16px;">
-  <div class="panel">
-    <div class="ph">
+<!-- ══ EFFICIENT FRONTIER ════════════════════════════════════ -->
+<div style="padding:0 8px 12px;">
+  <div class="panel pe d6">
+    <div class="ph marble-text">
       Efficient Frontier
       <span class="neu" style="font-size:9px;">MARKOWITZ PORTFOLIO THEORY · REQUIRES 2+ ASSETS</span>
     </div>
-    <div id="frontierMsg" style="color:#6b7280;font-size:11px;text-align:center;padding:14px 0;">
+    <div id="frontierMsg" style="color:var(--text2);font-size:11px;text-align:center;padding:14px 0;">
       Add 2 or more stocks to generate the efficient frontier.
     </div>
     <canvas id="frontierChart" style="max-height:260px;display:none;"></canvas>
   </div>
 </div>
+
+<!-- ══ TEAM SECTION ══════════════════════════════════════════ -->
+<div class="team-section">
+
+  <div class="team-header pe d7">
+    <div class="team-header-label">Built by</div>
+    <div class="team-name marble-text" style="font-size:10px;letter-spacing:5px;">THE ARCHITECTS</div>
+    <div class="team-header-line"></div>
+  </div>
+
+  <div class="team-grid">
+
+    <!-- Jaskaran Singh Daudher -->
+    <div class="team-card founder d7">
+      <div class="team-monogram mono-founder">JSD</div>
+      <div class="team-name marble-text">Jaskaran Singh Daudher</div>
+      <div class="team-role">Founder</div>
+      <div class="founder-badge">Magister Capitalis</div>
+    </div>
+
+    <!-- Rohan -->
+    <div class="team-card d8">
+      <div class="team-monogram mono-rohan">R</div>
+      <div class="team-name" style="color:var(--text1);">Rohan</div>
+      <div class="team-role">Head of Financial<br>Narrative Systems</div>
+    </div>
+
+    <!-- Callum -->
+    <div class="team-card d9">
+      <div class="team-monogram mono-callum">C</div>
+      <div class="team-name" style="color:var(--text1);">Callum</div>
+      <div class="team-role">Head of Interface</div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- ══ PARTICLE SYSTEM ═══════════════════════════════════════ -->
+<script>
+(function(){
+  const cv = document.getElementById('particles');
+  const cx = cv.getContext('2d');
+  let W, H, pts;
+
+  function resize(){
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+  }
+  function mkPt(){
+    return{
+      x:Math.random()*W, y:Math.random()*H,
+      r:Math.random()*1.4+.3,
+      vx:(Math.random()-.5)*.22,
+      vy:(Math.random()-.5)*.22,
+      a:Math.random()*.45+.08,
+    };
+  }
+  function init(){ resize(); pts=Array.from({length:80},mkPt); }
+
+  function frame(){
+    cx.clearRect(0,0,W,H);
+    // dots
+    pts.forEach(p=>{
+      cx.beginPath();
+      cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(122,184,216,${p.a})`;
+      cx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    });
+    // connecting lines
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<100){
+          cx.beginPath();
+          cx.moveTo(pts[i].x,pts[i].y);
+          cx.lineTo(pts[j].x,pts[j].y);
+          cx.strokeStyle=`rgba(74,143,190,${.07*(1-d/100)})`;
+          cx.lineWidth=.6;
+          cx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize',resize);
+  init(); frame();
+})();
+</script>
 
 <script src="portfolio.js"></script>
 <script src="charts.js"></script>
