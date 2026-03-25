@@ -20,13 +20,13 @@ async function updateTickerBar() {
       const arrow = chg >= 0 ? "▲" : "▼";
       const cls = chg >= 0 ? "pos" : "neg";
 
-      html += `<span style="margin:0 20px;color:#e2e8f0;">
-        <span style="color:#f59e0b;font-weight:700;">${sym}</span>
-        ${price}
-        <span class="${cls}">${arrow}${Math.abs(chg).toFixed(2)}%</span>
+      html += `<span style="margin:0 20px;color:#c8dff0;">
+        <span style="color:#7ab8d8;font-weight:700;letter-spacing:1px;">${sym}</span>
+        &nbsp;${price}
+        <span class="${cls}">&nbsp;${arrow}${Math.abs(chg).toFixed(2)}%</span>
       </span>`;
     } catch {
-      html += `<span style="margin:0 20px;color:#6b7280;">${sym} —</span>`;
+      html += `<span style="margin:0 20px;color:#4a7090;">${sym} —</span>`;
     }
   }
 
@@ -67,7 +67,7 @@ function createHeatmap() {
     cell.className = "hcell";
     cell.style.background = bg;
     cell.innerHTML = `
-      <div style="color:#9ca3af;font-size:9px;letter-spacing:1px;">${sym}</div>
+      <div style="color:#7ab8d8;font-size:9px;letter-spacing:1px;">${sym}</div>
       <div class="${cls}" style="font-size:12px;">${sign}${change}%</div>
     `;
     container.appendChild(cell);
@@ -98,7 +98,7 @@ function loadHedgeFunds() {
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td style="color:#e2e8f0;">${row.fund}</td>
+      <td style="color:#c8dff0;">${row.fund}</td>
       <td class="amber" style="font-weight:700;">${row.stock}</td>
       <td>${row.position}</td>
       <td class="${cls}">${row.change}</td>
@@ -145,7 +145,7 @@ async function loadNews() {
           <div class="neu" style="font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">
             ${item.source ? item.source + " · " : ""}${date}
           </div>
-          <div style="color:#e2e8f0;font-size:11px;font-weight:600;margin-bottom:3px;line-height:1.4;">
+          <div style="color:#c8dff0;font-size:11px;font-weight:600;margin-bottom:3px;line-height:1.4;">
             ${item.headline}
           </div>
           ${summary ? `<div class="neu" style="font-size:10px;line-height:1.4;">${summary}</div>` : ""}

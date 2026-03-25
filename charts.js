@@ -19,8 +19,8 @@ function drawAllocationChart(portfolio) {
   const values = priced.map((s) => s.shares * s.currentPrice);
 
   const COLORS = [
-    "#f59e0b", "#3b82f6", "#00d964", "#ef4444", "#a855f7",
-    "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#14b8a6",
+    "#5a9dc8", "#3b82f6", "#00d97e", "#f04458", "#8b5cf6",
+    "#06b6d4", "#7ab8d8", "#4ade80", "#e879a0", "#14b8a6",
   ];
 
   if (allocationChart) { allocationChart.destroy(); }
@@ -32,7 +32,7 @@ function drawAllocationChart(portfolio) {
       datasets: [{
         data: values,
         backgroundColor: COLORS.slice(0, labels.length),
-        borderColor: "#050a0f",
+        borderColor: "#020a16",
         borderWidth: 2,
         hoverOffset: 6,
       }],
@@ -42,7 +42,7 @@ function drawAllocationChart(portfolio) {
       plugins: {
         legend: {
           labels: {
-            color: "#e2e8f0",
+            color: "#c8dff0",
             font: { family: "'JetBrains Mono',monospace", size: 11 },
           },
         },
@@ -161,7 +161,7 @@ function runMonteCarlo(startValue) {
         y: {
           title: { display: true, text: "Value (£)", color: "#6b7280" },
           ticks: {
-            color: "#6b7280",
+            color: "#4a7090",
             font: { size: 10 },
             callback: (v) => "£" + v.toFixed(0),
           },
